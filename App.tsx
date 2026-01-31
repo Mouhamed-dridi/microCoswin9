@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { User } from './types';
 import { getSession, clearSession } from './services/database';
@@ -10,8 +9,8 @@ import TicketDetailView from './components/TicketDetailView';
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
   // Global error handler to redirect to login on "crash" or unexpected behavior
   useEffect(() => {
@@ -40,15 +39,7 @@ const App: React.FC = () => {
   const handleLogout = () => {
     clearSession();
     setUser(null);
-    setSelectedTicketId(null);
     setShowSuccess(false);
-  };
-
-  const handleViewDetail = (id: number) => {
-    setSelectedTicketId(id);
-  };
-
-  const handleBackToDashboard = () => {
     setSelectedTicketId(null);
   };
 
@@ -73,19 +64,24 @@ const App: React.FC = () => {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  if (selectedTicketId !== null) {
+  if (user.role === 'manager') {
+    if (selectedTicketId) {
+      return (
+        <TicketDetailView 
+          ticketId={selectedTicketId} 
+          user={user} 
+          onBack={() => setSelectedTicketId(null)} 
+          onLogout={handleLogout} 
+        />
+      );
+    }
     return (
-      <TicketDetailView 
-        ticketId={selectedTicketId} 
+      <ManagerPage 
         user={user} 
-        onBack={handleBackToDashboard} 
+        onViewDetail={(id) => setSelectedTicketId(id)} 
         onLogout={handleLogout} 
       />
     );
-  }
-
-  if (user.role === 'manager') {
-    return <ManagerPage user={user} onViewDetail={handleViewDetail} onLogout={handleLogout} />;
   }
 
   if (showSuccess) {
