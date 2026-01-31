@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { User, Ticket, TicketStatus, Group, AppPreferences } from '../types';
 import { 
@@ -173,7 +172,7 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
         </header>
 
         {/* CONTENT */}
-        <main className="flex-1 overflow-y-auto p-10 max-w-[1240px] w-full mx-auto">
+        <main className="flex-1 overflow-y-auto p-10 max-w-[1440px] w-full mx-auto">
           {activeTab === 'tickets' ? (
             <>
               <div className="flex items-center justify-between mb-8">
@@ -211,38 +210,49 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-[#F9FAFB] text-[#667085] text-[12px] font-semibold border-b border-[#EAECF0]">
-                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Sujet</th>
-                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Statut</th>
-                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Date de soumission</th>
-                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">ID Ticket</th>
-                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Priorité</th>
-                      <th className="py-3 px-6 font-semibold uppercase tracking-wider"></th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Ticket ID</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Date</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">User</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">UserID</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Machine</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Location</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Proties</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Probleme Kind</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Probleme Discartion</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#EAECF0]">
                     {filteredTickets.map(ticket => (
                       <tr key={ticket.id} className="hover:bg-[#F9FAFB] transition-colors group">
-                        <td className="py-4 px-6">
-                          <button onClick={() => onViewDetail(ticket.id)} className="text-[#006699] font-semibold text-sm hover:underline text-left block max-w-[300px] truncate leading-tight">
-                            {ticket.machine}
-                          </button>
+                        <td className="py-4 px-6 text-sm font-mono font-bold text-[#101828]">
+                           <button onClick={() => onViewDetail(ticket.id)} className="hover:underline">
+                             FX001{ticket.id.toString().slice(-3)}
+                           </button>
                         </td>
-                        <td className="py-4 px-6">
-                          <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-medium ${getStatusStyle(ticket.status)}`}>
-                            {translateStatus(ticket.status)}
-                          </span>
+                        <td className="py-4 px-6 text-sm text-[#667085]">
+                           {new Date(ticket.date).toLocaleString('fr-TN', { 
+                             day: '2-digit', 
+                             month: '2-digit', 
+                             year: 'numeric', 
+                             hour: 'numeric', 
+                             minute: '2-digit',
+                             hour12: true 
+                           }).toUpperCase()}
                         </td>
-                        <td className="py-4 px-6 text-sm text-[#667085]">{new Date(ticket.date).toLocaleDateString()}</td>
-                        <td className="py-4 px-6 text-sm font-medium text-[#475467]">#{ticket.id}</td>
+                        <td className="py-4 px-6 text-sm font-medium text-[#344054]">{ticket.operatorName}</td>
+                        <td className="py-4 px-6 text-sm text-[#667085]">{ticket.matricule}</td>
+                        <td className="py-4 px-6 text-sm text-[#344054]">{ticket.machine}</td>
+                        <td className="py-4 px-6 text-sm text-[#667085]">{ticket.location}</td>
                         <td className="py-4 px-6">
                           <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-medium border ${getPriorityStyle(ticket.urgency)}`}>
                             {translateUrgency(ticket.urgency)}
                           </span>
                         </td>
-                        <td className="py-4 px-6 text-right">
-                          <button className="text-[#98A2B3] hover:text-[#475467] p-1 rounded-md transition-colors">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" /></svg>
-                          </button>
+                        <td className="py-4 px-6 text-sm text-[#667085]">{ticket.type}</td>
+                        <td className="py-4 px-6 text-sm text-[#475467]">
+                          <div className="max-w-[240px] truncate" title={ticket.description}>
+                            {ticket.description}
+                          </div>
                         </td>
                       </tr>
                     ))}
