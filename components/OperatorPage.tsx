@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User, ProblemType, UrgencyLevel, LocationType } from '../types';
 import { addTicket } from '../services/database';
@@ -48,13 +47,7 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#F2F4F7] p-4 font-['Plus_Jakarta_Sans']">
       
-      {/* Top Nav for logged in operator */}
-      <div className="w-full max-w-[560px] flex justify-between items-center mb-4 px-2">
-        <div className="flex items-center gap-2">
-           <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} alt="avatar" className="w-8 h-8 rounded-full border border-[#EAECF0]" />
-           <span className="text-sm font-bold text-[#344054]">{user.username}</span>
-        </div>
-      </div>
+      {/* Top nav space removed as requested */}
 
       <div className="w-full max-w-[560px] bg-white rounded-2xl shadow-xl overflow-hidden border border-[#EAECF0]">
         
@@ -144,9 +137,10 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
                     required
                   >
                     <option value="">Select machine location</option>
-                    <option value="zone 1">Zone 1</option>
-                    <option value="zone 2">Zone 2</option>
-                    <option value="zone 3">Zone 3</option>
+                    <option value="Zone 1">Zone 1</option>
+                    <option value="Zone 2">Zone 2</option>
+                    <option value="Zone 3">Zone 3</option>
+                    <option value="Other">Other</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#667085]">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -220,13 +214,6 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
 
           {/* Footer */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#EAECF0]">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="px-4 py-2 text-sm font-semibold text-[#344054] hover:bg-[#F9FAFB] rounded-lg transition-colors"
-            >
-              Réinitialiser
-            </button>
             <button
               type="submit"
               className="px-6 py-2.5 bg-[#007a8c] hover:bg-[#006675] text-white text-sm font-bold rounded-lg shadow-sm transition-all active:scale-[0.98]"

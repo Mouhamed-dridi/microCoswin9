@@ -25,12 +25,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     const u = username.trim();
     const p = password.trim();
 
+    // Manager login (Admin)
     if (u === 'admin' && p === 'admin123') {
       const user: User = { username: 'admin', role: 'manager' };
       setSession(user);
       onLogin(user);
-    } else if (u === 'OPT' && p === 'OPT123') {
-      const user: User = { username: 'OPT', role: 'operator' };
+    } 
+    // Operator login (opt) - Updated to lowercase as requested
+    else if (u === 'opt' && p === 'opt123') {
+      const user: User = { username: 'opt', role: 'operator' };
       setSession(user);
       onLogin(user);
     } else {
@@ -56,7 +59,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         <div className="px-8 pt-4 pb-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <label className="text-[13px] font-semibold text-[#344054]">login</label>
+              {/* Renamed label from 'login' to 'Utilisateur' */}
+              <label className="text-[13px] font-semibold text-[#344054]">Utilisateur</label>
               <input
                 type="text"
                 placeholder="e.g. John Doe, Ahmed Ben Ali"
