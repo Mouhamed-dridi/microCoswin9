@@ -19,7 +19,9 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
   const [activeTab, setActiveTab] = useState<TabType>('tickets');
   const [searchQuery, setSearchQuery] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showInfoPopup, setShowInfoPopup] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const infoRef = useRef<HTMLDivElement>(null);
 
   const loadData = () => {
     setTickets(getTickets());
@@ -36,9 +38,22 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false);
       }
+      if (infoRef.current && !infoRef.current.contains(event.target as Node)) {
+        setShowInfoPopup(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowUserMenu(false);
+        setShowInfoPopup(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const filteredTickets = useMemo(() => {
@@ -163,9 +178,23 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
         
         {/* Header Bar */}
         <header className="h-[64px] bg-white border-b border-[#EAECF0] flex items-center justify-end px-8 gap-6">
-          <button className="text-[#667085] hover:text-[#101828] transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          </button>
+          <div className="relative" ref={infoRef}>
+            <button 
+              onClick={() => setShowInfoPopup(!showInfoPopup)}
+              className="text-[#667085] hover:text-[#101828] transition-colors p-1"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </button>
+            {showInfoPopup && (
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-[#EAECF0] p-4 z-50 text-xs text-[#475467] leading-relaxed">
+                <p>Version : 5.12.0</p>
+                <p>Provider : Microindust</p>
+                <p>Licence : Active</p>
+                <p className="my-1">--------------------</p>
+                <p>©2026 MicroIndust, Inc. All Rights Reserved.</p>
+              </div>
+            )}
+          </div>
           
           <div className="relative" ref={menuRef}>
             <button 
