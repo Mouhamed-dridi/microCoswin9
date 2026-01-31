@@ -13,7 +13,17 @@ const App: React.FC = () => {
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Check for existing session immediately on app load
+  // Global error handler to redirect to login on "crash" or unexpected behavior
+  useEffect(() => {
+    const handleError = () => {
+      console.error("Unexpected app behavior detected. Redirecting to login.");
+      handleLogout();
+    };
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
+  // Check for existing session immediately on app load to ensure Login is entry point
   useEffect(() => {
     const activeUser = getSession();
     if (activeUser) {
@@ -24,7 +34,6 @@ const App: React.FC = () => {
 
   const handleLogin = (authenticatedUser: User) => {
     setUser(authenticatedUser);
-    // After standalone login, we go straight to the relevant landing page
     setShowSuccess(false);
   };
 
@@ -51,7 +60,6 @@ const App: React.FC = () => {
     setShowSuccess(false);
   };
 
-  // Initial loading state
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#F2F4F7]">
@@ -60,12 +68,11 @@ const App: React.FC = () => {
     );
   }
 
-  // FIRST GUARD: If no user session, always show Login Page
+  // FORCE: Login page is the default entry point if no session exists
   if (!user) {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  // SECOND GUARD: Handle Detail View Overlay
   if (selectedTicketId !== null) {
     return (
       <TicketDetailView 
@@ -77,13 +84,10 @@ const App: React.FC = () => {
     );
   }
 
-  // THIRD GUARD: Role-Based Routing
-  // Managers land on the support ticket dashboard
   if (user.role === 'manager') {
     return <ManagerPage user={user} onViewDetail={handleViewDetail} onLogout={handleLogout} />;
   }
 
-  // Operators land on the success screen ONLY after a ticket submission
   if (showSuccess) {
     return (
       <div className="min-h-screen flex flex-col bg-[#F2F4F7] font-['Plus_Jakarta_Sans']">
@@ -109,7 +113,7 @@ const App: React.FC = () => {
                 onClick={handleLogout}
                 className="w-full py-3 text-[#667085] hover:text-[#B42318] font-bold text-sm transition-colors"
               >
-                Déconnexion
+                Logout
               </button>
             </div>
           </div>
@@ -121,7 +125,6 @@ const App: React.FC = () => {
     );
   }
 
-  // Logged-in Operator default view: Ticket Form
   return (
     <OperatorPage 
       user={user} 

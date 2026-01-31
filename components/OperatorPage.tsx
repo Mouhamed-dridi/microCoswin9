@@ -21,9 +21,9 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
   const [formData, setFormData] = useState(initialFormState);
   const [error, setError] = useState('');
 
+  // OVERRIDE: Redirect user to login page on cancel
   const handleCancel = () => {
-    setFormData(initialFormState);
-    setError('');
+    onLogout();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -54,51 +54,68 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} alt="avatar" className="w-8 h-8 rounded-full border border-[#EAECF0]" />
            <span className="text-sm font-bold text-[#344054]">{user.username}</span>
         </div>
-        <button onClick={onLogout} className="text-xs font-bold text-[#667085] hover:text-[#B42318] transition-colors uppercase tracking-widest">
-          Déconnexion
-        </button>
       </div>
 
       <div className="w-full max-w-[560px] bg-white rounded-2xl shadow-xl overflow-hidden border border-[#EAECF0]">
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#EAECF0]">
-          <h1 className="text-lg font-bold text-[#101828]">Nouveau Rapport de Maintenance</h1>
-          <button 
-            type="button" 
-            onClick={handleCancel}
-            className="text-[#98A2B3] hover:text-[#667085] transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <h1 className="text-lg font-bold text-[#101828]">Report Issue & Operator Login</h1>
+          <div className="flex items-center gap-2">
+            <button onClick={onLogout} className="text-xs font-bold text-[#667085] hover:text-[#B42318] transition-colors uppercase tracking-widest mr-2">Logout</button>
+            <button 
+              type="button" 
+              onClick={handleCancel}
+              className="text-[#98A2B3] hover:text-[#667085] transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-8">
           
-          {/* Section info (Static for logged in user) */}
+          {/* Section 1 - Operator Credentials */}
           <div className="space-y-6">
             <div className="flex items-center justify-between group cursor-pointer">
               <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full border-2 border-[#007a8c] flex items-center justify-center bg-white">
-                  <svg className="w-4 h-4 text-[#007a8c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                  </svg>
+                <div className="w-6 h-6 rounded-full border-2 border-[#007a8c] flex items-center justify-center bg-white text-[11px] font-bold text-[#007a8c]">
+                  1
                 </div>
-                <span className="text-sm font-bold text-[#007a8c]">Session Active : {user.username}</span>
+                <span className="text-sm font-bold text-[#344054]">Operator Credentials</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-semibold text-[#344054]">Operator Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. John Doe, Ahmed Ben Ali"
+                  className="w-full h-11 px-3.5 bg-[#F9FAFB] border border-[#D0D5DD] rounded-lg text-sm text-[#101828] flex items-center font-medium outline-none focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c]"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-semibold text-[#344054]">Matricule ID</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 12345678"
+                  className="w-full h-11 px-3.5 bg-[#F9FAFB] border border-[#D0D5DD] rounded-lg text-sm text-[#101828] flex items-center font-medium outline-none focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c]"
+                />
               </div>
             </div>
           </div>
 
-          {/* Section 2 - Incident Details */}
+          {/* Section 2 - Machine & Problem Details */}
           <div className="space-y-6">
             <div className="flex items-center justify-between group cursor-pointer">
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 rounded-full border-2 border-[#667085] flex items-center justify-center bg-white text-[11px] font-bold text-[#667085]">
                   2
                 </div>
-                <span className="text-sm font-bold text-[#344054]">Détails Machine & Incident</span>
+                <span className="text-sm font-bold text-[#344054]">Machine & Problem Details</span>
               </div>
               <svg className="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
@@ -107,10 +124,10 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Code Machine</label>
+                <label className="text-[13px] font-semibold text-[#344054]">Machine / Asset Code</label>
                 <input
                   type="text"
-                  placeholder="ID de l'Équipement"
+                  placeholder="e.g. MCH-0456"
                   className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
                   value={formData.machineCode}
                   onChange={(e) => setFormData({ ...formData, machineCode: e.target.value })}
@@ -118,21 +135,31 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Emplacement</label>
-                <input
-                  type="text"
-                  placeholder="Zone/Site"
-                  className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
-                  value={formData.machineLocation}
-                  onChange={(e) => setFormData({ ...formData, machineLocation: e.target.value as any })}
-                  required
-                />
+                <label className="text-[13px] font-semibold text-[#344054]">Machine Location</label>
+                <div className="relative">
+                  <select
+                    className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm appearance-none"
+                    value={formData.machineLocation}
+                    onChange={(e) => setFormData({ ...formData, machineLocation: e.target.value as any })}
+                    required
+                  >
+                    <option value="">Select machine location</option>
+                    <option value="zone 1">Zone 1</option>
+                    <option value="zone 2">Zone 2</option>
+                    <option value="zone 3">Zone 3</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#667085]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Type de Problème</label>
+                <label className="text-[13px] font-semibold text-[#344054]">Problem Type</label>
                 <div className="relative">
                   <select
                     className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm appearance-none"
@@ -152,7 +179,7 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Priorité</label>
+                <label className="text-[13px] font-semibold text-[#344054]">Priority</label>
                 <div className="relative">
                   <select
                     className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm appearance-none"
@@ -174,9 +201,9 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[13px] font-semibold text-[#344054]">Description Détaillée</label>
+              <label className="text-[13px] font-semibold text-[#344054]">Detailed Problem Description</label>
               <textarea
-                placeholder="Décrire la panne technique..."
+                placeholder="Please describe the failure / symptoms / what happened in detail (include error codes if any)..."
                 className="w-full h-24 p-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm resize-none"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}

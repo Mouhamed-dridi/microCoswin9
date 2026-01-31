@@ -54,17 +54,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         </div>
 
         <div className="px-8 pt-4 pb-8">
-          <div className="mb-6 text-center">
-             <h2 className="text-lg font-semibold text-[#101828]">Bienvenue</h2>
-             <p className="text-sm text-[#667085]">Veuillez vous connecter pour continuer</p>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <label className="text-[13px] font-semibold text-[#344054]">Nom d'utilisateur</label>
+              <label className="text-[13px] font-semibold text-[#344054]">login</label>
               <input
                 type="text"
-                placeholder="Entrez votre identifiant"
+                placeholder="e.g. John Doe, Ahmed Ben Ali"
                 className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#98A2B3] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
