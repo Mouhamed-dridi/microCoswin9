@@ -169,6 +169,16 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
               </div>
             </div>
 
+            {/* Section 3 - Technical Problem Details */}
+            <div className="flex items-center justify-between group cursor-pointer pt-4">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full border-2 border-[#667085] flex items-center justify-center bg-white text-[11px] font-bold text-[#667085]">
+                  3
+                </div>
+                <span className="text-sm font-bold text-[#344054]">Technical Problem Details</span>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[13px] font-semibold text-[#344054]">Problem Type</label>
