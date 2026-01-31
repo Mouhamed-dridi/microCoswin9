@@ -1,28 +1,20 @@
 
 import React, { useState } from 'react';
-import { User, ProblemType, UrgencyLevel, LocationType } from '../types';
-import { setSession, addTicket } from '../services/database';
+import { User } from '../types';
+import { setSession } from '../services/database';
 
 interface LoginPageProps {
   onLogin: (user: User) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-  const initialFormState = {
-    operatorName: '',
-    matricule: '',
-    machineCode: '',
-    machineLocation: '' as LocationType | '',
-    problemType: 'Mechanical' as ProblemType,
-    priority: 'Medium' as UrgencyLevel,
-    description: ''
-  };
-
-  const [formData, setFormData] = useState(initialFormState);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleCancel = () => {
-    setFormData(initialFormState);
+    setUsername('');
+    setPassword('');
     setError('');
   };
 
@@ -30,216 +22,97 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     e.preventDefault();
     setError('');
 
-    const name = formData.operatorName.trim();
-    const matricule = formData.matricule.trim();
+    const u = username.trim();
+    const p = password.trim();
 
-    if (!name || !matricule) {
-      setError('Veuillez entrer votre Nom et votre Matricule pour vous authentifier.');
-      return;
-    }
-
-    // 1. Save the maintenance ticket to the persistent database
-    addTicket({
-      machine: formData.machineCode || 'Équipement Inconnu',
-      location: (formData.machineLocation as LocationType) || 'Other',
-      type: formData.problemType,
-      urgency: formData.priority,
-      description: formData.description || 'Aucune description fournie.',
-      operatorName: name,
-      matricule: matricule,
-      reporter: name,
-    });
-
-    // 2. Logic to distinguish roles based on credentials
-    const lowerName = name.toLowerCase();
-    if (lowerName === 'manager' && matricule === '456') {
-      const user: User = { username: 'manager', role: 'manager' };
+    if (u === 'admin' && p === 'admin123') {
+      const user: User = { username: 'admin', role: 'manager' };
+      setSession(user);
+      onLogin(user);
+    } else if (u === 'OPT' && p === 'OPT123') {
+      const user: User = { username: 'OPT', role: 'operator' };
       setSession(user);
       onLogin(user);
     } else {
-      // For all other cases, treat as successful operator submission
-      const user: User = { username: name, role: 'operator' };
-      setSession(user);
-      onLogin(user);
+      setError('Nom d\'utilisateur ou mot de passe incorrect.');
     }
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#F2F4F7] p-4 font-['Plus_Jakarta_Sans']">
-      <div className="w-full max-w-[560px] bg-white rounded-2xl shadow-xl overflow-hidden border border-[#EAECF0]">
+      <div className="w-full max-w-[440px] bg-white rounded-2xl shadow-xl overflow-hidden border border-[#EAECF0]">
         
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[#EAECF0]">
-          <h1 className="text-lg font-bold text-[#101828]">Signaler un Problème & Connexion</h1>
-          <button 
-            type="button" 
-            onClick={handleCancel}
-            className="text-[#98A2B3] hover:text-[#667085] transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+        {/* Branding/Header */}
+        <div className="p-8 pb-4 text-center">
+          <div className="w-12 h-12 bg-[#007a8c] rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-          </button>
+          </div>
+          <h1 className="text-2xl font-bold text-[#101828]">MicroFix</h1>
+          <p className="text-sm text-[#667085] mt-1 font-medium">Portail de Maintenance Industrielle</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-8">
-          
-          {/* Section 1 - Operator Credentials */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between group cursor-pointer">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full border-2 border-[#007a8c] flex items-center justify-center bg-white">
-                  <svg className="w-4 h-4 text-[#007a8c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <span className="text-sm font-bold text-[#007a8c]">Identifiants Opérateur</span>
-              </div>
-              <svg className="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Nom de l'Opérateur</label>
-                <input
-                  type="text"
-                  placeholder="ex: Jean Dupont"
-                  className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
-                  value={formData.operatorName}
-                  onChange={(e) => setFormData({ ...formData, operatorName: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Matricule</label>
-                <input
-                  type="text"
-                  placeholder="N° de Matricule"
-                  className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
-                  value={formData.matricule}
-                  onChange={(e) => setFormData({ ...formData, matricule: e.target.value })}
-                  required
-                />
-              </div>
-            </div>
+        <div className="px-8 pt-4 pb-8">
+          <div className="mb-6 text-center">
+             <h2 className="text-lg font-semibold text-[#101828]">Bienvenue</h2>
+             <p className="text-sm text-[#667085]">Veuillez vous connecter pour continuer</p>
           </div>
 
-          {/* Section 2 - Incident Details */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between group cursor-pointer">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full border-2 border-[#667085] flex items-center justify-center bg-white text-[11px] font-bold text-[#667085]">
-                  2
-                </div>
-                <span className="text-sm font-bold text-[#344054]">Détails Machine & Incident</span>
-              </div>
-              <svg className="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Code Machine</label>
-                <input
-                  type="text"
-                  placeholder="ID de l'Équipement"
-                  className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
-                  value={formData.machineCode}
-                  onChange={(e) => setFormData({ ...formData, machineCode: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Emplacement</label>
-                <input
-                  type="text"
-                  placeholder="Zone/Site"
-                  className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
-                  value={formData.machineLocation}
-                  onChange={(e) => setFormData({ ...formData, machineLocation: e.target.value as any })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Type de Problème</label>
-                <div className="relative">
-                  <select
-                    className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm appearance-none"
-                    value={formData.problemType}
-                    onChange={(e) => setFormData({ ...formData, problemType: e.target.value as ProblemType })}
-                  >
-                    <option value="Mechanical">Mécanique</option>
-                    <option value="Electrical">Électrique</option>
-                    <option value="Hydraulic">Hydraulique</option>
-                    <option value="Sensor">Capteur</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#667085]">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Priorité</label>
-                <div className="relative">
-                  <select
-                    className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm appearance-none"
-                    value={formData.priority}
-                    onChange={(e) => setFormData({ ...formData, priority: e.target.value as UrgencyLevel })}
-                  >
-                    <option value="Low">Faible</option>
-                    <option value="Medium">Moyen</option>
-                    <option value="High">Élevé</option>
-                    <option value="Critical – line stopped">Critique</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#667085]">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1.5">
+              <label className="text-[13px] font-semibold text-[#344054]">Nom d'utilisateur</label>
+              <input
+                type="text"
+                placeholder="Entrez votre identifiant"
+                className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#98A2B3] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[13px] font-semibold text-[#344054]">Description Détaillée</label>
-              <textarea
-                placeholder="Décrire la panne technique..."
-                className="w-full h-24 p-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm resize-none"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              ></textarea>
+              <label className="text-[13px] font-semibold text-[#344054]">Mot de passe</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#98A2B3] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
-          </div>
 
-          {error && (
-            <div className="text-xs font-bold text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">
-              {error}
+            {error && (
+              <div className="text-xs font-bold text-red-600 bg-red-50 p-3 rounded-lg border border-red-100 animate-pulse">
+                {error}
+              </div>
+            )}
+
+            <div className="pt-2 space-y-3">
+              <button
+                type="submit"
+                className="w-full h-11 bg-[#007a8c] hover:bg-[#006675] text-white text-sm font-bold rounded-lg shadow-sm transition-all active:scale-[0.98]"
+              >
+                Connexion
+              </button>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="w-full h-11 bg-white border border-[#D0D5DD] text-[#344054] text-sm font-semibold rounded-lg hover:bg-[#F9FAFB] transition-all"
+              >
+                Annuler
+              </button>
             </div>
-          )}
+          </form>
+        </div>
 
-          {/* Footer */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#EAECF0]">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="px-4 py-2 text-sm font-semibold text-[#344054] hover:bg-[#F9FAFB] rounded-lg transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2.5 bg-[#007a8c] hover:bg-[#006675] text-white text-sm font-bold rounded-lg shadow-sm transition-all active:scale-[0.98]"
-            >
-              Ajouter
-            </button>
-          </div>
-        </form>
+        <div className="px-8 py-4 bg-[#F9FAFB] border-t border-[#EAECF0] text-center">
+          <p className="text-[11px] font-bold text-[#98A2B3] uppercase tracking-widest">
+            Accès Sécurisé • v1.2.0
+          </p>
+        </div>
       </div>
     </div>
   );

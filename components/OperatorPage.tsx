@@ -1,166 +1,218 @@
 
-import React, { useState, useRef } from 'react';
-import { User, ProblemType, LocationType, UrgencyLevel } from '../types';
+import React, { useState } from 'react';
+import { User, ProblemType, UrgencyLevel, LocationType } from '../types';
 import { addTicket } from '../services/database';
 
 interface OperatorPageProps {
   user: User;
+  onLogout: () => void;
+  onSuccess: () => void;
 }
 
-const OperatorPage: React.FC<OperatorPageProps> = ({ user }) => {
-  const [formData, setFormData] = useState({
-    machine: '',
-    location: '' as unknown as LocationType,
-    type: 'Mechanical' as ProblemType,
-    urgency: 'Medium' as UrgencyLevel,
-    description: '',
-    reporter: user.username,
-    operatorName: '',
-    matricule: '',
-    image: null as string | null
-  });
+const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }) => {
+  const initialFormState = {
+    machineCode: '',
+    machineLocation: '' as LocationType | '',
+    problemType: 'Mechanical' as ProblemType,
+    priority: 'Medium' as UrgencyLevel,
+    description: ''
+  };
 
-  const [errors, setErrors] = useState<string[]>([]);
-  const [showToast, setShowToast] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [formData, setFormData] = useState(initialFormState);
+  const [error, setError] = useState('');
 
-  const validate = () => {
-    const newErrors: string[] = [];
-    if (!formData.operatorName.trim()) newErrors.push("Operator Identity is required.");
-    if (!formData.matricule.trim()) newErrors.push("Matricule Registration ID is required.");
-    if (!formData.machine.trim()) newErrors.push("Asset ID / Machine name is required.");
-    if (!formData.location) newErrors.push("Operational Zone selection is required.");
-    if (formData.description.trim().length < 10) {
-      newErrors.push("Problem description requires more detail (min 10 chars).");
-    }
-    setErrors(newErrors);
-    return newErrors.length === 0;
+  const handleCancel = () => {
+    setFormData(initialFormState);
+    setError('');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
-    addTicket(formData as any);
-    setShowToast(true);
-    setErrors([]);
-    setFormData({ machine: '', location: '' as unknown as LocationType, type: 'Mechanical', urgency: 'Medium', description: '', reporter: user.username, operatorName: '', matricule: '', image: null });
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    setTimeout(() => setShowToast(false), 3000);
+    setError('');
+
+    // Save the maintenance ticket to the persistent database
+    addTicket({
+      machine: formData.machineCode || 'Équipement Inconnu',
+      location: (formData.machineLocation as LocationType) || 'Other',
+      type: formData.problemType,
+      urgency: formData.priority,
+      description: formData.description || 'Aucune description fournie.',
+      operatorName: user.username,
+      matricule: 'N/A', // Using user session info
+      reporter: user.username,
+    });
+
+    onSuccess();
   };
 
-  const SectionTitle = ({ num, title }: { num: string, title: string }) => (
-    <div className="flex items-center gap-3 mb-6">
-      <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-black text-sm">{num}</div>
-      <h3 className="text-base font-bold text-slate-800 dark:text-white tracking-tight">{title}</h3>
-    </div>
-  );
-
   return (
-    <div className="max-w-4xl mx-auto py-12 px-6">
-      <div className="mb-12 text-center md:text-left">
-        <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-3 leading-none">Maintenance Report</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium text-lg">Log a technical breakdown for rapid response deployment</p>
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#F2F4F7] p-4 font-['Plus_Jakarta_Sans']">
+      
+      {/* Top Nav for logged in operator */}
+      <div className="w-full max-w-[560px] flex justify-between items-center mb-4 px-2">
+        <div className="flex items-center gap-2">
+           <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} alt="avatar" className="w-8 h-8 rounded-full border border-[#EAECF0]" />
+           <span className="text-sm font-bold text-[#344054]">{user.username}</span>
+        </div>
+        <button onClick={onLogout} className="text-xs font-bold text-[#667085] hover:text-[#B42318] transition-colors uppercase tracking-widest">
+          Déconnexion
+        </button>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden transition-all">
-        <div className="bg-slate-50 dark:bg-slate-800/50 px-10 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Formal Request Document</span>
-          <div className="flex gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700" />
-            <div className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700" />
-            <div className="w-2.5 h-2.5 rounded-full bg-slate-200 dark:bg-slate-700" />
-          </div>
+      <div className="w-full max-w-[560px] bg-white rounded-2xl shadow-xl overflow-hidden border border-[#EAECF0]">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#EAECF0]">
+          <h1 className="text-lg font-bold text-[#101828]">Nouveau Rapport de Maintenance</h1>
+          <button 
+            type="button" 
+            onClick={handleCancel}
+            className="text-[#98A2B3] hover:text-[#667085] transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-10 lg:p-14 space-y-12">
-          <section>
-            <SectionTitle num="01" title="Operator Credentials" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-1">Primary Operator</label>
-                <input type="text" placeholder="Full name" className="w-full h-14 px-5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-all" value={formData.operatorName} onChange={(e) => setFormData({ ...formData, operatorName: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-1">Matricule ID</label>
-                <input type="text" placeholder="e.g. MX-4092" className="w-full h-14 px-5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-all" value={formData.matricule} onChange={(e) => setFormData({ ...formData, matricule: e.target.value })} />
+        <form onSubmit={handleSubmit} className="p-6 space-y-8">
+          
+          {/* Section info (Static for logged in user) */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between group cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full border-2 border-[#007a8c] flex items-center justify-center bg-white">
+                  <svg className="w-4 h-4 text-[#007a8c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span className="text-sm font-bold text-[#007a8c]">Session Active : {user.username}</span>
               </div>
             </div>
-          </section>
+          </div>
 
-          <section>
-            <SectionTitle num="02" title="Asset & Environment" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-1">Machine Identity</label>
-                <input type="text" placeholder="Asset Serial / Name" className="w-full h-14 px-5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-all" value={formData.machine} onChange={(e) => setFormData({ ...formData, machine: e.target.value })} />
+          {/* Section 2 - Incident Details */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between group cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full border-2 border-[#667085] flex items-center justify-center bg-white text-[11px] font-bold text-[#667085]">
+                  2
+                </div>
+                <span className="text-sm font-bold text-[#344054]">Détails Machine & Incident</span>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-1">Zone / Facility</label>
-                <select className="w-full h-14 px-5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-all" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value as LocationType })}>
-                  <option value="" disabled>Select physical location</option>
-                  <option value="Zone 1">Zone 1 - Main Floor</option>
-                  <option value="Zone 2">Zone 2 - Assembly</option>
-                  <option value="Zone 3">Zone 3 - Packaging</option>
-                  <option value="Other">External Facilities</option>
-                </select>
-              </div>
+              <svg className="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
-          </section>
 
-          <section>
-            <SectionTitle num="03" title="Incident Particulars" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-1">Failure Mode</label>
-                <select className="w-full h-14 px-5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-all" value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}>
-                  <option value="Mechanical">Mechanical</option>
-                  <option value="Electrical">Electrical</option>
-                  <option value="Sensor">Sensor / PLC</option>
-                  <option value="Hydraulic">Hydraulic</option>
-                  <option value="Other">Miscellaneous</option>
-                </select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-semibold text-[#344054]">Code Machine</label>
+                <input
+                  type="text"
+                  placeholder="ID de l'Équipement"
+                  className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
+                  value={formData.machineCode}
+                  onChange={(e) => setFormData({ ...formData, machineCode: e.target.value })}
+                  required
+                />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-1">Operational Impact</label>
-                <select className={`w-full h-14 px-5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-bold transition-all ${formData.urgency.includes('Critical') ? 'text-red-600 border-red-100' : ''}`} value={formData.urgency} onChange={(e) => setFormData({ ...formData, urgency: e.target.value as any })}>
-                  <option value="Low">Low - Non-Blocking</option>
-                  <option value="Medium">Medium - Reduced Speed</option>
-                  <option value="High">High - Major Fault</option>
-                  <option value="Critical – line stopped">CRITICAL - Total Stoppage</option>
-                </select>
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-semibold text-[#344054]">Emplacement</label>
+                <input
+                  type="text"
+                  placeholder="Zone/Site"
+                  className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
+                  value={formData.machineLocation}
+                  onChange={(e) => setFormData({ ...formData, machineLocation: e.target.value as any })}
+                  required
+                />
               </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-1">Detailed Technical Report</label>
-              <textarea className="w-full h-40 p-5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-all resize-none" placeholder="Describe specific symptoms, error codes, and preceding events..." value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })}></textarea>
-            </div>
-          </section>
 
-          {errors.length > 0 && (
-            <div className="p-6 bg-red-50 border border-red-100 rounded-2xl">
-              <ul className="list-disc list-inside text-xs text-red-600 font-bold space-y-1.5">
-                {errors.map((err, i) => <li key={i}>{err}</li>)}
-              </ul>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-semibold text-[#344054]">Type de Problème</label>
+                <div className="relative">
+                  <select
+                    className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm appearance-none"
+                    value={formData.problemType}
+                    onChange={(e) => setFormData({ ...formData, problemType: e.target.value as ProblemType })}
+                  >
+                    <option value="Mechanical">Mécanique</option>
+                    <option value="Electrical">Électrique</option>
+                    <option value="Hydraulic">Hydraulique</option>
+                    <option value="Sensor">Capteur</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#667085]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-semibold text-[#344054]">Priorité</label>
+                <div className="relative">
+                  <select
+                    className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm appearance-none"
+                    value={formData.priority}
+                    onChange={(e) => setFormData({ ...formData, priority: e.target.value as UrgencyLevel })}
+                  >
+                    <option value="Low">Faible</option>
+                    <option value="Medium">Moyen</option>
+                    <option value="High">Élevé</option>
+                    <option value="Critical – line stopped">Critique</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#667085]">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[13px] font-semibold text-[#344054]">Description Détaillée</label>
+              <textarea
+                placeholder="Décrire la panne technique..."
+                className="w-full h-24 p-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm resize-none"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                required
+              ></textarea>
+            </div>
+          </div>
+
+          {error && (
+            <div className="text-xs font-bold text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">
+              {error}
             </div>
           )}
 
-          <div className="pt-4">
-            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white h-16 rounded-2xl text-[15px] font-black shadow-2xl shadow-blue-100 transition-all active:scale-[0.98] flex items-center justify-center gap-3">
-              Submit Record to Master Log
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#EAECF0]">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="px-4 py-2 text-sm font-semibold text-[#344054] hover:bg-[#F9FAFB] rounded-lg transition-colors"
+            >
+              Réinitialiser
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2.5 bg-[#007a8c] hover:bg-[#006675] text-white text-sm font-bold rounded-lg shadow-sm transition-all active:scale-[0.98]"
+            >
+              Envoyer Rapport
             </button>
           </div>
         </form>
       </div>
-
-      {showToast && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-5 duration-300">
-          <div className="bg-emerald-600 text-white font-black px-10 py-4 rounded-2xl shadow-2xl flex items-center gap-3">
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-            Transaction Verified & Logged
-          </div>
-        </div>
-      )}
+      
+      <footer className="mt-8 text-[11px] font-bold text-[#98A2B3] uppercase tracking-widest text-center">
+        <div>© 2026 MicroFix • Sessions Opérateur Sécurisée</div>
+      </footer>
     </div>
   );
 };
