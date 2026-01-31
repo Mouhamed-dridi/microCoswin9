@@ -1,5 +1,3 @@
-
-// Fix: Corrected the malformed import statement on line 1
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { User, Ticket, TicketStatus, Group, AppPreferences } from '../types';
 import { 
@@ -111,7 +109,7 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
           </div>
         </div>
 
-        <nav className="flex-1 px-4 space-y-1">
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
           <SidebarItem 
             id="settings" 
             label="Paramètres" 
@@ -136,7 +134,10 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
             active={activeTab === 'tickets'} 
             icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>} 
           />
-          <div className="pt-2 mb-2 border-t border-[#EAECF0] opacity-50"></div>
+        </nav>
+
+        {/* Bottom Section - Documentation, Rapport, Logout */}
+        <div className="px-4 py-4 mt-auto border-t border-[#EAECF0] space-y-1">
           <SidebarItem 
             id="documentation" 
             label="Documentation" 
@@ -149,12 +150,11 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
             active={activeTab === 'rapport'} 
             icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>} 
           />
-        </nav>
-
-        <div className="p-4 border-t border-[#EAECF0] mt-auto">
-          <button className="w-full flex items-center justify-start p-2 text-[#667085] hover:text-[#101828]" onClick={onLogout}>
-             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg>
-          </button>
+          <div className="pt-2">
+            <button className="w-full flex items-center justify-start p-2 text-[#667085] hover:text-[#101828]" onClick={onLogout}>
+               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg>
+            </button>
+          </div>
         </div>
       </aside>
 
