@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import { User, Ticket, TicketStatus, Group, AppPreferences } from '../types';
 import { 
   getTickets, 
@@ -67,6 +68,32 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
       t.problemeDiscartion?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [tickets, searchQuery]);
+
+  const handleExportExcel = () => {
+    try {
+      const localTickets = JSON.parse(localStorage.getItem('tickets') || '[]');
+      const headers = ['TICKET ID', 'DATE', 'USER', 'USERID', 'MACHINE', 'LOCATION', 'PROTIES', 'PROBLEME KIND', 'PROBLEME DISCARTION'];
+      const rows = localTickets.map((ticket: any) => [
+        ticket.ticketId || '',
+        ticket.createdDate || '',
+        ticket.user || '',
+        ticket.userId || '',
+        ticket.machine || '',
+        ticket.location || '',
+        ticket.proties || '',
+        ticket.problemeKind || '',
+        ticket.problemeDiscartion || ''
+      ]);
+
+      const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Tickets");
+      XLSX.writeFile(wb, "tickets_export.xlsx");
+    } catch (err) {
+      console.log("Export not available - XLSX missing or error during export");
+      console.error(err);
+    }
+  };
 
   const translateUrgency = (priority: string) => {
     if (!priority) return 'N/A';
@@ -235,7 +262,7 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
                   Filtrer
                 </button>
-                <button onClick={exportDatabase} className="flex items-center gap-2 px-4 h-11 border border-[#D0D5DD] rounded-lg text-sm font-semibold text-[#344054] hover:bg-[#F9FAFB] transition-colors">
+                <button onClick={handleExportExcel} className="flex items-center gap-2 px-4 h-11 border border-[#D0D5DD] rounded-lg text-sm font-semibold text-[#344054] hover:bg-[#F9FAFB] transition-colors">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                   Exporter
                 </button>
