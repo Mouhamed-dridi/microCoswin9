@@ -63,10 +63,15 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
   }, []);
 
   const filteredTickets = useMemo(() => {
-    return tickets.filter(t => 
-      t.machine?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      t.problemeDiscartion?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const term = searchQuery.toLowerCase().trim();
+    return tickets.filter(ticket => {
+      if (!term) return true;
+      return (
+        (ticket.ticketId || '').toLowerCase().includes(term) ||
+        (ticket.machine || '').toLowerCase().includes(term) ||
+        (ticket.user || '').toLowerCase().includes(term)
+      );
+    });
   }, [tickets, searchQuery]);
 
   const handleExportExcel = () => {
