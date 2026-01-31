@@ -76,29 +76,29 @@ const App: React.FC = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-[#101828] mb-3">Report Submitted</h2>
+          <h2 className="text-2xl font-bold text-[#101828] mb-3">Rapport Soumis</h2>
           <p className="text-[#667085] mb-10 font-medium">
-            Thank you, {user.username}. Your maintenance request has been logged successfully and sent to the technical team.
+            Merci, {user.username}. Votre demande de maintenance a été enregistrée avec succès et transmise à l'équipe technique.
           </p>
           <div className="space-y-3">
             <button 
               onClick={handleLogout}
               className="w-full py-3 bg-[#007a8c] hover:bg-[#006675] text-white font-bold rounded-lg transition-all shadow-sm"
             >
-              Submit Another Report
+              Soumettre un autre rapport
             </button>
             <p className="text-xs text-[#98A2B3] font-semibold uppercase tracking-widest">
-              MicroFix Transaction Verified
+              Transaction MicroFix Vérifiée
             </p>
           </div>
         </div>
       </main>
 
       <footer className="p-8 bg-white border-t border-[#EAECF0] flex flex-col items-center gap-2 text-[11px] font-bold text-[#98A2B3] uppercase tracking-widest">
-        <div>© 2026 MicroFix • Enterprise Maintenance Solutions</div>
+        <div>© 2026 MicroFix • Solutions de Maintenance Industrielle</div>
         <div className="flex items-center gap-2">
           <span className="px-1.5 py-0.5 border border-[#EAECF0] rounded text-[10px]">v1.2.0</span>
-          <span>Database Persistent Mode Active</span>
+          <span>Mode Base de Données Persistante Actif</span>
         </div>
       </footer>
     </div>

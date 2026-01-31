@@ -49,6 +49,15 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
     );
   }, [tickets, searchQuery]);
 
+  const translateStatus = (status: TicketStatus) => {
+    switch (status) {
+      case 'Open': return 'Ouvert';
+      case 'In progress': return 'En cours';
+      case 'Closed': return 'Fermé';
+      default: return status;
+    }
+  };
+
   const getStatusStyle = (status: TicketStatus) => {
     switch (status) {
       case 'Open': return 'bg-[#EBF5FF] text-[#0066CC]';
@@ -56,6 +65,13 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
       case 'Closed': return 'bg-[#D1D5DB] text-[#1F2937]';
       default: return 'bg-slate-100 text-slate-600';
     }
+  };
+
+  const translateUrgency = (priority: string) => {
+    if (priority.includes('Critical')) return 'Critique';
+    if (priority === 'High') return 'Élevé';
+    if (priority === 'Medium') return 'Moyen';
+    return 'Faible';
   };
 
   const getPriorityStyle = (priority: string) => {
@@ -89,7 +105,7 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
           <div className="flex items-center gap-2">
             <div className="text-[#00314e] font-bold text-lg flex items-center gap-2">
               <span className="text-xl font-bold italic tracking-tighter">CapitalOne</span>
-              <span className="text-slate-500 font-normal text-sm">Software</span>
+              <span className="text-slate-500 font-normal text-sm">Logiciel</span>
             </div>
           </div>
         </div>
@@ -97,32 +113,32 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
         <nav className="flex-1 px-4 space-y-1">
           <SidebarItem 
             id="settings" 
-            label="Settings" 
+            label="Paramètres" 
             active={activeTab === 'settings'} 
             icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>} 
           />
           <SidebarItem 
             id="groups-users" 
-            label="Group and User" 
+            label="Groupe et Utilisateur" 
             active={activeTab === 'groups-users'} 
             icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>} 
           />
           <SidebarItem 
             id="crm" 
-            label="Provider CRM" 
+            label="CRM Fournisseur" 
             active={activeTab === 'crm'} 
             icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>} 
           />
           <SidebarItem 
             id="tickets" 
-            label="Ticket" 
+            label="Tickets" 
             active={activeTab === 'tickets'} 
             icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>} 
           />
         </nav>
 
         <div className="p-4 border-t border-[#EAECF0] mt-auto">
-          <button className="w-full flex items-center justify-start p-2 text-[#667085] hover:text-[#101828]">
+          <button className="w-full flex items-center justify-start p-2 text-[#667085] hover:text-[#101828]" onClick={onLogout}>
              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg>
           </button>
         </div>
@@ -150,7 +166,7 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
             </button>
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-[#EAECF0] py-1 z-50 overflow-hidden">
-                <button onClick={onLogout} className="w-full text-left px-4 py-2.5 text-sm text-[#B42318] hover:bg-[#FEF3F2] font-semibold transition-colors">Log out</button>
+                <button onClick={onLogout} className="w-full text-left px-4 py-2.5 text-sm text-[#B42318] hover:bg-[#FEF3F2] font-semibold transition-colors">Déconnexion</button>
               </div>
             )}
           </div>
@@ -161,10 +177,10 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
           {activeTab === 'tickets' ? (
             <>
               <div className="flex items-center justify-between mb-8">
-                <h1 className="text-[30px] font-bold text-[#101828] tracking-tight">Support tickets</h1>
+                <h1 className="text-[30px] font-bold text-[#101828] tracking-tight">Tickets de support</h1>
                 <button className="bg-[#00314e] hover:bg-[#00213d] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
-                  Create new ticket
+                  Créer un nouveau ticket
                 </button>
               </div>
 
@@ -174,7 +190,7 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
                   <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#667085]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                   <input 
                     type="text" 
-                    placeholder="Search" 
+                    placeholder="Rechercher" 
                     className="w-[320px] h-11 pl-10 pr-4 bg-white border border-[#D0D5DD] rounded-lg text-sm placeholder-[#667085] outline-none focus:border-[#00314e] focus:ring-1 focus:ring-[#00314e] transition-all"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -182,11 +198,11 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
                 </div>
                 <button className="flex items-center gap-2 px-4 h-11 border border-[#D0D5DD] rounded-lg text-sm font-semibold text-[#344054] hover:bg-[#F9FAFB] transition-colors">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-                  Filter
+                  Filtrer
                 </button>
                 <button onClick={exportDatabase} className="flex items-center gap-2 px-4 h-11 border border-[#D0D5DD] rounded-lg text-sm font-semibold text-[#344054] hover:bg-[#F9FAFB] transition-colors">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                  Export
+                  Exporter
                 </button>
               </div>
 
@@ -195,11 +211,11 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-[#F9FAFB] text-[#667085] text-[12px] font-semibold border-b border-[#EAECF0]">
-                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Subject</th>
-                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Status</th>
-                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Submission date</th>
-                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Ticket ID</th>
-                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Priority</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Sujet</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Statut</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Date de soumission</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">ID Ticket</th>
+                      <th className="py-3 px-6 font-semibold uppercase tracking-wider">Priorité</th>
                       <th className="py-3 px-6 font-semibold uppercase tracking-wider"></th>
                     </tr>
                   </thead>
@@ -213,14 +229,14 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
                         </td>
                         <td className="py-4 px-6">
                           <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-medium ${getStatusStyle(ticket.status)}`}>
-                            {ticket.status}
+                            {translateStatus(ticket.status)}
                           </span>
                         </td>
                         <td className="py-4 px-6 text-sm text-[#667085]">{new Date(ticket.date).toLocaleDateString()}</td>
                         <td className="py-4 px-6 text-sm font-medium text-[#475467]">#{ticket.id}</td>
                         <td className="py-4 px-6">
                           <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-medium border ${getPriorityStyle(ticket.urgency)}`}>
-                            {ticket.urgency === 'Critical – line stopped' ? 'High' : ticket.urgency}
+                            {translateUrgency(ticket.urgency)}
                           </span>
                         </td>
                         <td className="py-4 px-6 text-right">
@@ -240,10 +256,10 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
                   <svg className="w-8 h-8 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                </div>
                <h2 className="text-xl font-bold text-slate-800 capitalize mb-2">{activeTab.replace('-', ' ')}</h2>
-               <p className="max-w-sm text-center font-medium">This module is currently being optimized for your enterprise workflow. Persistent data remains secure.</p>
+               <p className="max-w-sm text-center font-medium">Ce module est en cours d'optimisation pour votre flux de travail d'entreprise. Les données persistantes restent sécurisées.</p>
                {activeTab === 'settings' && (
                   <button onClick={exportDatabase} className="mt-8 btn bg-white border-[#D0D5DD] text-[#344054] hover:bg-[#F9FAFB] font-semibold text-sm h-11 px-6 rounded-lg shadow-sm">
-                    Generate Database Snapshot
+                    Générer un instantané de la base de données
                   </button>
                )}
             </div>

@@ -34,17 +34,17 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     const matricule = formData.matricule.trim();
 
     if (!name || !matricule) {
-      setError('Please enter your Name and Matricule ID to authenticate.');
+      setError('Veuillez entrer votre Nom et votre Matricule pour vous authentifier.');
       return;
     }
 
     // 1. Save the maintenance ticket to the persistent database
     addTicket({
-      machine: formData.machineCode || 'Unknown Asset',
+      machine: formData.machineCode || 'Équipement Inconnu',
       location: (formData.machineLocation as LocationType) || 'Other',
       type: formData.problemType,
       urgency: formData.priority,
-      description: formData.description || 'No description provided.',
+      description: formData.description || 'Aucune description fournie.',
       operatorName: name,
       matricule: matricule,
       reporter: name,
@@ -70,7 +70,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#EAECF0]">
-          <h1 className="text-lg font-bold text-[#101828]">Report Issue & Login</h1>
+          <h1 className="text-lg font-bold text-[#101828]">Signaler un Problème & Connexion</h1>
           <button 
             type="button" 
             onClick={handleCancel}
@@ -93,7 +93,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <span className="text-sm font-bold text-[#007a8c]">Operator Credentials</span>
+                <span className="text-sm font-bold text-[#007a8c]">Identifiants Opérateur</span>
               </div>
               <svg className="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -102,10 +102,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Operator Name</label>
+                <label className="text-[13px] font-semibold text-[#344054]">Nom de l'Opérateur</label>
                 <input
                   type="text"
-                  placeholder="e.g. John Doe"
+                  placeholder="ex: Jean Dupont"
                   className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
                   value={formData.operatorName}
                   onChange={(e) => setFormData({ ...formData, operatorName: e.target.value })}
@@ -113,10 +113,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Matricule ID</label>
+                <label className="text-[13px] font-semibold text-[#344054]">Matricule</label>
                 <input
                   type="text"
-                  placeholder="ID Number"
+                  placeholder="N° de Matricule"
                   className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
                   value={formData.matricule}
                   onChange={(e) => setFormData({ ...formData, matricule: e.target.value })}
@@ -133,7 +133,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 <div className="w-6 h-6 rounded-full border-2 border-[#667085] flex items-center justify-center bg-white text-[11px] font-bold text-[#667085]">
                   2
                 </div>
-                <span className="text-sm font-bold text-[#344054]">Machine & Incident Details</span>
+                <span className="text-sm font-bold text-[#344054]">Détails Machine & Incident</span>
               </div>
               <svg className="w-4 h-4 text-[#667085]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
@@ -142,20 +142,20 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Machine Code</label>
+                <label className="text-[13px] font-semibold text-[#344054]">Code Machine</label>
                 <input
                   type="text"
-                  placeholder="Asset ID"
+                  placeholder="ID de l'Équipement"
                   className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
                   value={formData.machineCode}
                   onChange={(e) => setFormData({ ...formData, machineCode: e.target.value })}
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Location</label>
+                <label className="text-[13px] font-semibold text-[#344054]">Emplacement</label>
                 <input
                   type="text"
-                  placeholder="Zone/Facility"
+                  placeholder="Zone/Site"
                   className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm"
                   value={formData.machineLocation}
                   onChange={(e) => setFormData({ ...formData, machineLocation: e.target.value as any })}
@@ -165,17 +165,17 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Problem Type</label>
+                <label className="text-[13px] font-semibold text-[#344054]">Type de Problème</label>
                 <div className="relative">
                   <select
                     className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm appearance-none"
                     value={formData.problemType}
                     onChange={(e) => setFormData({ ...formData, problemType: e.target.value as ProblemType })}
                   >
-                    <option value="Mechanical">Mechanical</option>
-                    <option value="Electrical">Electrical</option>
-                    <option value="Hydraulic">Hydraulic</option>
-                    <option value="Sensor">Sensor</option>
+                    <option value="Mechanical">Mécanique</option>
+                    <option value="Electrical">Électrique</option>
+                    <option value="Hydraulic">Hydraulique</option>
+                    <option value="Sensor">Capteur</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#667085]">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,17 +185,17 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[13px] font-semibold text-[#344054]">Priority</label>
+                <label className="text-[13px] font-semibold text-[#344054]">Priorité</label>
                 <div className="relative">
                   <select
                     className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm appearance-none"
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value as UrgencyLevel })}
                   >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                    <option value="Critical – line stopped">Critical</option>
+                    <option value="Low">Faible</option>
+                    <option value="Medium">Moyen</option>
+                    <option value="High">Élevé</option>
+                    <option value="Critical – line stopped">Critique</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-[#667085]">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,9 +207,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[13px] font-semibold text-[#344054]">Detailed Description</label>
+              <label className="text-[13px] font-semibold text-[#344054]">Description Détaillée</label>
               <textarea
-                placeholder="Describe the technical failure..."
+                placeholder="Décrire la panne technique..."
                 className="w-full h-24 p-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] placeholder-[#667085] focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] outline-none transition-all shadow-sm resize-none"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -230,13 +230,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               onClick={handleCancel}
               className="px-4 py-2 text-sm font-semibold text-[#344054] hover:bg-[#F9FAFB] rounded-lg transition-colors"
             >
-              Cancel
+              Annuler
             </button>
             <button
               type="submit"
               className="px-6 py-2.5 bg-[#007a8c] hover:bg-[#006675] text-white text-sm font-bold rounded-lg shadow-sm transition-all active:scale-[0.98]"
             >
-              Add
+              Ajouter
             </button>
           </div>
         </form>
