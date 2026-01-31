@@ -5,6 +5,7 @@ import {
   getPreferences, 
   exportDatabase
 } from '../services/database';
+import OperatorPage from './OperatorPage';
 
 interface ManagerPageProps {
   user: User;
@@ -20,6 +21,7 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
   const [searchQuery, setSearchQuery] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showInfoPopup, setShowInfoPopup] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
 
@@ -48,6 +50,7 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
       if (event.key === 'Escape') {
         setShowUserMenu(false);
         setShowInfoPopup(false);
+        setShowCreateForm(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -207,7 +210,10 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
             <>
               <div className="flex items-center justify-between mb-8">
                 <h1 className="text-[30px] font-bold text-[#101828] tracking-tight">Tickets de support</h1>
-                <button className="bg-[#00314e] hover:bg-[#00213d] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors">
+                <button 
+                  onClick={() => setShowCreateForm(true)}
+                  className="bg-[#00314e] hover:bg-[#00213d] text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
+                >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
                   Créer un nouveau ticket
                 </button>
@@ -299,6 +305,17 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
           )}
         </main>
       </div>
+
+      {/* CREATE TICKET OVERLAY */}
+      {showCreateForm && (
+        <div className="fixed inset-0 z-[100] bg-[#F2F4F7] overflow-y-auto">
+           <OperatorPage 
+             user={user} 
+             onLogout={() => setShowCreateForm(false)} 
+             onSuccess={() => { setShowCreateForm(false); loadData(); }} 
+           />
+        </div>
+      )}
     </div>
   );
 };
