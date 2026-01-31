@@ -9,6 +9,9 @@ interface OperatorPageProps {
 }
 
 const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }) => {
+  const [ticketId] = useState(() => `FX001${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`);
+  const [createdDate] = useState(() => new Date().toLocaleString('fr-TN', { dateStyle: 'short', timeStyle: 'short' }));
+
   const initialFormState = {
     machineCode: '',
     machineLocation: '' as LocationType | '',
@@ -55,7 +58,6 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#EAECF0]">
           <h1 className="text-lg font-bold text-[#101828]">Report Issue & Operator Login</h1>
           <div className="flex items-center gap-2">
-            <button onClick={onLogout} className="text-xs font-bold text-[#667085] hover:text-[#B42318] transition-colors uppercase tracking-widest mr-2">Logout</button>
             <button 
               type="button" 
               onClick={handleCancel}
@@ -70,6 +72,22 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
 
         <form onSubmit={handleSubmit} className="p-6 space-y-8">
           
+          {/* Display Only Info Section */}
+          <div className="grid grid-cols-2 gap-4 pb-4 border-b border-[#F2F4F7]">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-[#667085] uppercase tracking-wider">Ticket ID</label>
+              <div className="w-full h-11 px-3.5 bg-[#F9FAFB] border border-[#D0D5DD] rounded-lg text-sm text-[#101828] flex items-center font-mono font-bold">
+                {ticketId}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-[#667085] uppercase tracking-wider">Date de création</label>
+              <div className="w-full h-11 px-3.5 bg-[#F9FAFB] border border-[#D0D5DD] rounded-lg text-sm text-[#101828] flex items-center font-medium">
+                {createdDate}
+              </div>
+            </div>
+          </div>
+
           {/* Section 1 - Operator Credentials */}
           <div className="space-y-6">
             <div className="flex items-center justify-between group cursor-pointer">
@@ -214,6 +232,13 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
 
           {/* Footer */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#EAECF0]">
+            <button 
+              type="button" 
+              onClick={onLogout} 
+              className="px-4 py-2.5 text-[#667085] hover:text-[#B42318] text-sm font-bold transition-colors uppercase tracking-widest"
+            >
+              Logout
+            </button>
             <button
               type="submit"
               className="px-6 py-2.5 bg-[#007a8c] hover:bg-[#006675] text-white text-sm font-bold rounded-lg shadow-sm transition-all active:scale-[0.98]"
