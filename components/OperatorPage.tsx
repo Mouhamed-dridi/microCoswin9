@@ -13,6 +13,8 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
   const [createdDate] = useState(() => new Date().toLocaleString('fr-TN', { dateStyle: 'short', timeStyle: 'short' }));
 
   const initialFormState = {
+    operatorName: '',
+    matriculeId: '',
     machineCode: '',
     machineLocation: '' as LocationType | '',
     problemType: 'Mechanical' as ProblemType,
@@ -32,19 +34,30 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
     e.preventDefault();
     setError('');
 
-    // Save the maintenance ticket to the persistent database
-    addTicket({
-      machine: formData.machineCode || 'Équipement Inconnu',
-      location: (formData.machineLocation as LocationType) || 'Other',
-      type: formData.problemType,
-      urgency: formData.priority,
-      description: formData.description || 'Aucune description fournie.',
-      operatorName: user.username,
-      matricule: 'N/A', // Using user session info
-      reporter: user.username,
-    });
+    // Collect ALL form data into a single object with specific keys
+    const newTicket = {
+      ticketId: ticketId,
+      createdDate: createdDate,
+      user: formData.operatorName,
+      userId: formData.matriculeId,
+      machine: formData.machineCode,
+      location: formData.machineLocation,
+      proties: formData.priority,
+      problemeKind: formData.problemType,
+      problemeDiscartion: formData.description
+    };
 
-    onSuccess();
+    try {
+      // Persistence logic using localStorage 'tickets' array
+      const existingTickets = JSON.parse(localStorage.getItem('tickets') || '[]');
+      existingTickets.push(newTicket);
+      localStorage.setItem('tickets', JSON.stringify(existingTickets));
+
+      // Proceed with existing submission logic
+      onSuccess();
+    } catch (err) {
+      setError('Erreur lors de la sauvegarde du rapport localement.');
+    }
   };
 
   return (
@@ -106,6 +119,9 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
                   type="text"
                   placeholder="e.g. John Doe, Ahmed Ben Ali"
                   className="w-full h-11 px-3.5 bg-[#F9FAFB] border border-[#D0D5DD] rounded-lg text-sm text-[#101828] flex items-center font-medium outline-none focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c]"
+                  value={formData.operatorName}
+                  onChange={(e) => setFormData({ ...formData, operatorName: e.target.value })}
+                  required
                 />
               </div>
               <div className="space-y-1.5">
@@ -114,6 +130,9 @@ const OperatorPage: React.FC<OperatorPageProps> = ({ user, onLogout, onSuccess }
                   type="text"
                   placeholder="e.g. 12345678"
                   className="w-full h-11 px-3.5 bg-[#F9FAFB] border border-[#D0D5DD] rounded-lg text-sm text-[#101828] flex items-center font-medium outline-none focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c]"
+                  value={formData.matriculeId}
+                  onChange={(e) => setFormData({ ...formData, matriculeId: e.target.value })}
+                  required
                 />
               </div>
             </div>

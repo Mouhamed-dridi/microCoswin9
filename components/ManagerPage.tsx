@@ -8,14 +8,14 @@ import {
 
 interface ManagerPageProps {
   user: User;
-  onViewDetail: (id: number) => void;
+  onViewDetail: (id: any) => void;
   onLogout: () => void;
 }
 
 type TabType = 'settings' | 'groups-users' | 'crm' | 'tickets' | 'documentation' | 'rapport';
 
 const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout }) => {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>('tickets');
   const [searchQuery, setSearchQuery] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -24,7 +24,9 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
   const infoRef = useRef<HTMLDivElement>(null);
 
   const loadData = () => {
-    setTickets(getTickets());
+    // Load from localStorage 'tickets' array as requested
+    const localTickets = JSON.parse(localStorage.getItem('tickets') || '[]');
+    setTickets(localTickets);
   };
 
   useEffect(() => {
@@ -58,30 +60,13 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
 
   const filteredTickets = useMemo(() => {
     return tickets.filter(t => 
-      t.machine.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      t.description.toLowerCase().includes(searchQuery.toLowerCase())
+      t.machine?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      t.problemeDiscartion?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [tickets, searchQuery]);
 
-  const translateStatus = (status: TicketStatus) => {
-    switch (status) {
-      case 'Open': return 'Ouvert';
-      case 'In progress': return 'En cours';
-      case 'Closed': return 'Fermé';
-      default: return status;
-    }
-  };
-
-  const getStatusStyle = (status: TicketStatus) => {
-    switch (status) {
-      case 'Open': return 'bg-[#EBF5FF] text-[#0066CC]';
-      case 'In progress': return 'bg-[#F2F4F7] text-[#344054]';
-      case 'Closed': return 'bg-[#D1D5DB] text-[#1F2937]';
-      default: return 'bg-slate-100 text-slate-600';
-    }
-  };
-
   const translateUrgency = (priority: string) => {
+    if (!priority) return 'N/A';
     if (priority.includes('Critical')) return 'Critique';
     if (priority === 'High') return 'Élevé';
     if (priority === 'Medium') return 'Moyen';
@@ -89,6 +74,7 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
   };
 
   const getPriorityStyle = (priority: string) => {
+    if (!priority) return 'border-slate-200 text-slate-400 bg-white';
     if (priority.includes('Critical') || priority === 'High') return 'border-[#FDA29B] text-[#B42318] bg-white';
     if (priority === 'Medium') return 'border-[#FEC84B] text-[#B54708] bg-white';
     return 'border-[#D6BBFB] text-[#53389E] bg-white';
@@ -266,36 +252,29 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onViewDetail, onLogout 
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#EAECF0]">
-                    {filteredTickets.map(ticket => (
-                      <tr key={ticket.id} className="hover:bg-[#F9FAFB] transition-colors group">
+                    {filteredTickets.map((ticket, idx) => (
+                      <tr key={ticket.ticketId || idx} className="hover:bg-[#F9FAFB] transition-colors group">
                         <td className="py-4 px-6 text-sm font-mono font-bold text-[#101828]">
-                           <button onClick={() => onViewDetail(ticket.id)} className="hover:underline">
-                             FX001{ticket.id.toString().slice(-3)}
+                           <button onClick={() => onViewDetail(ticket.ticketId as any)} className="hover:underline">
+                             {ticket.ticketId}
                            </button>
                         </td>
                         <td className="py-4 px-6 text-sm text-[#667085]">
-                           {new Date(ticket.date).toLocaleString('fr-TN', { 
-                             day: '2-digit', 
-                             month: '2-digit', 
-                             year: 'numeric', 
-                             hour: 'numeric', 
-                             minute: '2-digit',
-                             hour12: true 
-                           }).toUpperCase()}
+                           {ticket.createdDate}
                         </td>
-                        <td className="py-4 px-6 text-sm font-medium text-[#344054]">{ticket.operatorName}</td>
-                        <td className="py-4 px-6 text-sm text-[#667085]">{ticket.matricule}</td>
+                        <td className="py-4 px-6 text-sm font-medium text-[#344054]">{ticket.user}</td>
+                        <td className="py-4 px-6 text-sm text-[#667085]">{ticket.userId}</td>
                         <td className="py-4 px-6 text-sm text-[#344054]">{ticket.machine}</td>
                         <td className="py-4 px-6 text-sm text-[#667085]">{ticket.location}</td>
                         <td className="py-4 px-6">
-                          <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-medium border ${getPriorityStyle(ticket.urgency)}`}>
-                            {translateUrgency(ticket.urgency)}
+                          <span className={`px-2.5 py-0.5 rounded-full text-[12px] font-medium border ${getPriorityStyle(ticket.proties)}`}>
+                            {translateUrgency(ticket.proties)}
                           </span>
                         </td>
-                        <td className="py-4 px-6 text-sm text-[#667085]">{ticket.type}</td>
+                        <td className="py-4 px-6 text-sm text-[#667085]">{ticket.problemeKind}</td>
                         <td className="py-4 px-6 text-sm text-[#475467]">
-                          <div className="max-w-[240px] truncate" title={ticket.description}>
-                            {ticket.description}
+                          <div className="max-w-[240px] truncate" title={ticket.problemeDiscartion}>
+                            {ticket.problemeDiscartion}
                           </div>
                         </td>
                       </tr>
