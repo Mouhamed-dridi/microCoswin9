@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
-import { Provider, getProviders, addProvider } from '../services/crmService';
+import { Provider, getProviders, addProvider, saveProviders } from '../services/crmService';
 import ProviderCard from './ProviderCard';
 
 const CRMPage: React.FC = () => {
@@ -8,6 +8,8 @@ const CRMPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [editProviderId, setEditProviderId] = useState<number | null>(null);
 
   // Form State updated with Website and Type
   const [formData, setFormData] = useState({
@@ -69,11 +71,68 @@ const CRMPage: React.FC = () => {
     XLSX.writeFile(workbook, `CapitalOne_Fournisseurs_${dateStr}.xlsx`);
   };
 
+  const handleToggleSelect = (id: number) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(filteredProviders.map(p => p.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleDelete = () => {
+    if (selectedIds.length === 0) return;
+    if (window.confirm(`Confirmer la suppression de ${selectedIds.length} fournisseur(s) ?`)) {
+      const updated = providers.filter(p => !selectedIds.includes(p.id));
+      setProviders(updated);
+      saveProviders(updated);
+      setSelectedIds([]);
+    }
+  };
+
+  const handleEditClick = () => {
+    if (selectedIds.length !== 1) return;
+    const provider = providers.find(p => p.id === selectedIds[0]);
+    if (provider) {
+      setFormData({
+        name: provider.name,
+        company: provider.company,
+        tel: provider.tel,
+        mail: provider.mail,
+        website: provider.website || '',
+        type: provider.type
+      });
+      setEditProviderId(provider.id);
+      setShowAddModal(true);
+    }
+  };
+
+  const handleOpenAdd = () => {
+    setFormData({ name: '', company: '', tel: '', mail: '', website: '', type: 'Entreprise' });
+    setEditProviderId(null);
+    setShowAddModal(true);
+  };
+
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addProvider(formData);
-    setProviders(getProviders());
+    if (editProviderId) {
+      const updated = providers.map(p => 
+        p.id === editProviderId ? { ...p, ...formData } : p
+      );
+      setProviders(updated);
+      saveProviders(updated);
+    } else {
+      addProvider(formData);
+      setProviders(getProviders());
+    }
     setShowAddModal(false);
+    setEditProviderId(null);
+    setSelectedIds([]);
     setFormData({ name: '', company: '', tel: '', mail: '', website: '', type: 'Entreprise' });
   };
 
@@ -140,8 +199,39 @@ const CRMPage: React.FC = () => {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
             Exporter
           </button>
+
+          {/* New Modifier/Supprimer buttons */}
+          <div className="flex items-center gap-2">
+            <div className={selectedIds.length !== 1 ? "tooltip tooltip-bottom" : ""} data-tip="Sélectionnez exactement un fournisseur">
+              <button 
+                onClick={handleEditClick}
+                disabled={selectedIds.length !== 1}
+                className={`h-10 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all border ${
+                  selectedIds.length === 1 
+                    ? 'border-[#007a8c] text-[#007a8c] hover:bg-[#F0F9FA]' 
+                    : 'border-gray-200 text-gray-300 cursor-not-allowed'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                Modifier
+              </button>
+            </div>
+            <button 
+              onClick={handleDelete}
+              disabled={selectedIds.length === 0}
+              className={`h-10 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all border ${
+                selectedIds.length > 0 
+                  ? 'border-red-600 text-red-600 hover:bg-red-50' 
+                  : 'border-gray-200 text-gray-300 cursor-not-allowed'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              Supprimer
+            </button>
+          </div>
+
           <button 
-            onClick={() => setShowAddModal(true)}
+            onClick={handleOpenAdd}
             className="flex-1 md:flex-none h-10 bg-[#007a8c] hover:bg-[#006675] text-white px-5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
@@ -156,7 +246,7 @@ const CRMPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {/* Add Provider Card Trigger */}
             <button 
-              onClick={() => setShowAddModal(true)}
+              onClick={handleOpenAdd}
               className="group h-full min-h-[260px] bg-[#F9FAFB] border-2 border-dashed border-[#D0D5DD] hover:border-[#007a8c] hover:bg-[#F0F9FA] rounded-xl flex flex-col items-center justify-center gap-4 transition-all"
             >
               <div className="w-16 h-16 rounded-full bg-white border border-[#D0D5DD] flex items-center justify-center shadow-sm group-hover:bg-[#007a8c] transition-colors">
@@ -177,7 +267,14 @@ const CRMPage: React.FC = () => {
               <table className="table w-full border-collapse">
                 <thead>
                   <tr className="bg-[#F9FAFB] border-b border-[#EAECF0]">
-                    <th className="w-12 px-6"><input type="checkbox" className="checkbox checkbox-sm checkbox-primary" disabled /></th>
+                    <th className="w-12 px-6">
+                      <input 
+                        type="checkbox" 
+                        className="checkbox checkbox-sm checkbox-primary" 
+                        onChange={handleSelectAll}
+                        checked={selectedIds.length === filteredProviders.length && filteredProviders.length > 0}
+                      />
+                    </th>
                     <th className="text-[12px] font-bold text-[#667085] uppercase tracking-wider px-6 py-4 text-left">Société</th>
                     <th className="text-[12px] font-bold text-[#667085] uppercase tracking-wider px-6 py-4 text-left">Nom du contact</th>
                     <th className="text-[12px] font-bold text-[#667085] uppercase tracking-wider px-6 py-4 text-left">Téléphone</th>
@@ -187,8 +284,15 @@ const CRMPage: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-[#F2F4F7]">
                   {filteredProviders.map(p => (
-                    <tr key={p.id} className="hover:bg-[#F9FAFB] transition-colors group">
-                      <td className="px-6 py-4"><input type="checkbox" className="checkbox checkbox-sm checkbox-primary" /></td>
+                    <tr key={p.id} className={`hover:bg-[#F9FAFB] transition-colors group ${selectedIds.includes(p.id) ? 'bg-[#F0F9FA]' : ''}`}>
+                      <td className="px-6 py-4">
+                        <input 
+                          type="checkbox" 
+                          className="checkbox checkbox-sm checkbox-primary" 
+                          checked={selectedIds.includes(p.id)}
+                          onChange={() => handleToggleSelect(p.id)}
+                        />
+                      </td>
                       <td className="px-6 py-4 font-bold text-[#101828]">{p.company}</td>
                       <td className="px-6 py-4 text-[#344054] font-medium">{p.name}</td>
                       <td className="px-6 py-4 font-semibold text-[#344054] whitespace-nowrap">
@@ -228,12 +332,14 @@ const CRMPage: React.FC = () => {
         )}
       </div>
 
-      {/* Add Modal */}
+      {/* Add / Edit Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#101828]/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[500px] border border-[#EAECF0] overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-6 border-b border-[#EAECF0] flex items-center justify-between bg-[#F9FAFB]">
-              <h2 className="text-xl font-bold text-[#101828]">Nouveau Fournisseur</h2>
+              <h2 className="text-xl font-bold text-[#101828]">
+                {editProviderId ? 'Modifier Fournisseur' : 'Nouveau Fournisseur'}
+              </h2>
               <button onClick={() => setShowAddModal(false)} className="text-[#667085] hover:text-[#101828] p-1">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -324,7 +430,7 @@ const CRMPage: React.FC = () => {
                   type="submit"
                   className="px-8 h-11 bg-[#007a8c] hover:bg-[#006675] text-white text-sm font-bold rounded-lg shadow-md transition-all active:scale-[0.98]"
                 >
-                  Enregistrer
+                  {editProviderId ? 'Mettre à jour' : 'Enregistrer'}
                 </button>
               </div>
             </form>

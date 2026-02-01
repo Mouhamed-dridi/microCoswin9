@@ -6,7 +6,7 @@ interface ProviderCardProps {
 }
 
 const ProviderCard: React.FC<ProviderCardProps> = ({ provider }) => {
-  // Logic to get initials from company or name (first 2 characters)
+  // Logic to get initials from company (first 2 characters)
   const getInitials = () => {
     const source = provider.company || provider.name || '??';
     return source.trim().slice(0, 2).toUpperCase();
@@ -27,7 +27,7 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ provider }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition group flex flex-col h-full">
-      {/* Top Row: Initials, Company Name, Ellipsis */}
+      {/* Top Row: Initials, Company Details, Ellipsis */}
       <div className="flex items-center justify-between gap-4 mb-1">
         <div className="flex items-center gap-3 overflow-hidden">
           {/* Left: Initials Badge */}
@@ -35,11 +35,18 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ provider }) => {
             {getInitials()}
           </div>
 
-          {/* Center: Company Name */}
+          {/* Center: Company Name + Contact Person */}
           <div className="min-w-0">
             <h3 className="text-lg font-semibold text-gray-900 truncate leading-tight group-hover:text-gray-700 transition-colors">
-              {provider.company || provider.name}
+              {provider.company}
             </h3>
+            {/* Contact Person Name with Icon */}
+            <div className="flex items-center gap-1.5 mt-0.5 text-gray-600">
+               <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+               </svg>
+               <span className="text-sm font-medium truncate">{provider.name || 'Contact inconnu'}</span>
+            </div>
           </div>
         </div>
 
