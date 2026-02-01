@@ -3,9 +3,11 @@ import { Provider } from '../services/crmService';
 
 interface ProviderCardProps {
   provider: Provider;
+  onEdit: (p: Provider) => void;
+  onDelete: (id: number) => void;
 }
 
-const ProviderCard: React.FC<ProviderCardProps> = ({ provider }) => {
+const ProviderCard: React.FC<ProviderCardProps> = ({ provider, onEdit, onDelete }) => {
   // Logic to get initials from company (first 2 characters)
   const getInitials = () => {
     const source = provider.company || provider.name || '??';
@@ -58,8 +60,22 @@ const ProviderCard: React.FC<ProviderCardProps> = ({ provider }) => {
             </svg>
           </label>
           <ul tabIndex={0} className="dropdown-content menu p-2 shadow-xl bg-white border border-gray-100 rounded-lg w-32 text-xs font-semibold z-20">
-            <li><a className="py-2 hover:bg-gray-50">Modifier</a></li>
-            <li><a className="py-2 text-red-600 hover:bg-red-50">Supprimer</a></li>
+            <li>
+              <button 
+                className="py-2 hover:bg-gray-50 text-left w-full text-gray-700"
+                onClick={() => onEdit(provider)}
+              >
+                Modifier
+              </button>
+            </li>
+            <li>
+              <button 
+                className="py-2 text-red-600 hover:bg-red-50 text-left w-full"
+                onClick={() => onDelete(provider.id)}
+              >
+                Supprimer
+              </button>
+            </li>
           </ul>
         </div>
       </div>

@@ -25,25 +25,6 @@ const CRMPage: React.FC = () => {
     setProviders(getProviders());
   }, []);
 
-  const stats = useMemo(() => {
-    // Total Providers
-    const totalCount = providers.length;
-    
-    // Nouveaux (Recently added - Jan or Feb 2026)
-    const nouveauCount = providers.filter(p => 
-      p.createdAt.includes('/01/2026') || p.createdAt.includes('/02/2026')
-    ).length;
-    
-    // Actifs (Using Type Entreprise as a proxy for business partners)
-    const activeCount = providers.filter(p => p.type === 'Entreprise').length;
-
-    return {
-      total: totalCount,
-      nouveaux: nouveauCount,
-      actifs: activeCount,
-    };
-  }, [providers]);
-
   const filteredProviders = useMemo(() => {
     return providers.filter(p => {
       const matchesSearch = 
@@ -105,17 +86,28 @@ const CRMPage: React.FC = () => {
     if (selectedIds.length !== 1) return;
     const provider = providers.find(p => p.id === selectedIds[0]);
     if (provider) {
-      setFormData({
-        name: provider.name,
-        company: provider.company,
-        tel: provider.tel,
-        mail: provider.mail,
-        website: provider.website || '',
-        type: provider.type
-      });
-      setEditProviderId(provider.id);
-      setShowAddModal(true);
+      handleEditProvider(provider);
     }
+  };
+
+  // Dedicated single-item handlers for ProviderCard
+  const handleEditProvider = (provider: Provider) => {
+    setFormData({
+      name: provider.name,
+      company: provider.company,
+      tel: provider.tel,
+      mail: provider.mail,
+      website: provider.website || '',
+      type: provider.type
+    });
+    setEditProviderId(provider.id);
+    setShowAddModal(true);
+  };
+
+  const handleDeleteProvider = (id: number) => {
+    setSelectedIds([id]);
+    const toggle = document.getElementById('delete-confirm-modal') as HTMLInputElement;
+    if (toggle) toggle.checked = true;
   };
 
   const handleOpenAdd = () => {
@@ -153,26 +145,11 @@ const CRMPage: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
-      {/* Header & Stats */}
+      {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8 shrink-0">
         <div>
           <h1 className="text-[30px] font-bold text-[#101828] tracking-tight">CRM Fournisseur</h1>
           <p className="text-[#667085] font-medium">Gestion des partenaires industriels CapitalOne</p>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4 lg:w-fit">
-          <div className="bg-white border border-[#EAECF0] rounded-xl px-4 py-3 shadow-sm min-w-[150px]">
-            <div className="text-[11px] font-bold text-[#667085] uppercase tracking-wider mb-1">Total Fournisseurs</div>
-            <div className="text-2xl font-bold text-[#101828]">{stats.total}</div>
-          </div>
-          <div className="bg-white border border-[#EAECF0] rounded-xl px-4 py-3 shadow-sm min-w-[150px]">
-            <div className="text-[11px] font-bold text-[#667085] uppercase tracking-wider mb-1">Nouveaux</div>
-            <div className="text-2xl font-bold text-[#007a8c]">{stats.nouveaux}</div>
-          </div>
-          <div className="bg-white border border-[#EAECF0] rounded-xl px-4 py-3 shadow-sm min-w-[150px]">
-            <div className="text-[11px] font-bold text-[#667085] uppercase tracking-wider mb-1">Actifs Entreprise</div>
-            <div className="text-2xl font-bold text-green-600">{stats.actifs}</div>
-          </div>
         </div>
       </div>
 
@@ -273,7 +250,12 @@ const CRMPage: React.FC = () => {
             </button>
 
             {filteredProviders.map(p => (
-              <ProviderCard key={p.id} provider={p} />
+              <ProviderCard 
+                key={p.id} 
+                provider={p} 
+                onEdit={handleEditProvider} 
+                onDelete={handleDeleteProvider} 
+              />
             ))}
           </div>
         ) : (
