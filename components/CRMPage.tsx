@@ -87,12 +87,18 @@ const CRMPage: React.FC = () => {
 
   const handleDelete = () => {
     if (selectedIds.length === 0) return;
-    if (window.confirm(`Confirmer la suppression de ${selectedIds.length} fournisseur(s) ?`)) {
-      const updated = providers.filter(p => !selectedIds.includes(p.id));
-      setProviders(updated);
-      saveProviders(updated);
-      setSelectedIds([]);
-    }
+    // Trigger the DaisyUI modal via the checkbox toggle
+    const toggle = document.getElementById('delete-confirm-modal') as HTMLInputElement;
+    if (toggle) toggle.checked = true;
+  };
+
+  const confirmDelete = () => {
+    const updated = providers.filter(p => !selectedIds.includes(p.id));
+    setProviders(updated);
+    saveProviders(updated);
+    setSelectedIds([]);
+    const toggle = document.getElementById('delete-confirm-modal') as HTMLInputElement;
+    if (toggle) toggle.checked = false;
   };
 
   const handleEditClick = () => {
@@ -120,14 +126,23 @@ const CRMPage: React.FC = () => {
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // URL Normalization: Automatically prepend https:// if protocol is missing
+    let normalizedWebsite = formData.website.trim();
+    if (normalizedWebsite && !/^https?:\/\//i.test(normalizedWebsite)) {
+      normalizedWebsite = `https://${normalizedWebsite}`;
+    }
+    
+    const finalFormData = { ...formData, website: normalizedWebsite };
+
     if (editProviderId) {
       const updated = providers.map(p => 
-        p.id === editProviderId ? { ...p, ...formData } : p
+        p.id === editProviderId ? { ...p, ...finalFormData } : p
       );
       setProviders(updated);
       saveProviders(updated);
     } else {
-      addProvider(formData);
+      addProvider(finalFormData);
       setProviders(getProviders());
     }
     setShowAddModal(false);
@@ -200,7 +215,7 @@ const CRMPage: React.FC = () => {
             Exporter
           </button>
 
-          {/* New Modifier/Supprimer buttons */}
+          {/* Modifier/Supprimer buttons */}
           <div className="flex items-center gap-2">
             <div className={selectedIds.length !== 1 ? "tooltip tooltip-bottom" : ""} data-tip="Sélectionnez exactement un fournisseur">
               <button 
@@ -332,6 +347,28 @@ const CRMPage: React.FC = () => {
         )}
       </div>
 
+      {/* Delete Confirmation Modal */}
+      <input type="checkbox" id="delete-confirm-modal" className="modal-toggle" />
+      <div className="modal" role="dialog">
+        <div className="modal-box bg-white">
+          <h3 className="font-bold text-lg text-red-600">Confirmer la suppression</h3>
+          <p className="py-4 text-[#344054]">
+            Êtes-vous sûr de vouloir supprimer {selectedIds.length} fournisseur(s) ? 
+            Cette action est irréversible.
+          </p>
+          <div className="modal-action">
+            <label htmlFor="delete-confirm-modal" className="btn btn-sm h-10 border border-[#D0D5DD] bg-white text-[#344054] hover:bg-[#F9FAFB] normal-case">Annuler</label>
+            <button 
+              className="btn btn-sm h-10 bg-red-600 hover:bg-red-700 text-white border-none normal-case px-6"
+              onClick={confirmDelete}
+            >
+              Supprimer
+            </button>
+          </div>
+        </div>
+        <label className="modal-backdrop" htmlFor="delete-confirm-modal">Close</label>
+      </div>
+
       {/* Add / Edit Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#101828]/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -410,12 +447,15 @@ const CRMPage: React.FC = () => {
               <div className="space-y-1.5">
                 <label className="text-[13px] font-bold text-[#344054]">Site Web (Optionnel)</label>
                 <input 
-                  type="url" 
+                  type="text" 
                   className="w-full h-11 px-3.5 bg-white border border-[#D0D5DD] rounded-lg text-sm text-[#101828] outline-none focus:border-[#007a8c] focus:ring-1 focus:ring-[#007a8c] transition-all shadow-sm"
-                  placeholder="https://..."
+                  placeholder="www.exemple.tn"
                   value={formData.website}
                   onChange={e => setFormData({...formData, website: e.target.value})}
                 />
+                <p className="text-[11px] text-[#667085] font-medium mt-1">
+                  (ex: www.societe.tn – https:// ajouté automatiquement)
+                </p>
               </div>
 
               <div className="pt-6 border-t border-[#F2F4F7] flex items-center justify-end gap-3">
