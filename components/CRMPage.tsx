@@ -150,26 +150,74 @@ const CRMPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Grid Content */}
+      {/* Main Content View (Grid or List) */}
       <div className="flex-1 overflow-y-auto pr-2 pb-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {/* Add Provider Card Trigger */}
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="group h-full min-h-[260px] bg-[#F9FAFB] border-2 border-dashed border-[#D0D5DD] hover:border-[#007a8c] hover:bg-[#F0F9FA] rounded-xl flex flex-col items-center justify-center gap-4 transition-all"
-          >
-            <div className="w-16 h-16 rounded-full bg-white border border-[#D0D5DD] flex items-center justify-center shadow-sm group-hover:bg-[#007a8c] transition-colors">
-              <svg className="w-8 h-8 text-[#667085] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
-            </div>
-            <span className="text-[#667085] font-bold text-sm group-hover:text-[#007a8c] transition-colors max-w-[150px] text-center">
-              Ajouter un nouveau fournisseur
-            </span>
-          </button>
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {/* Add Provider Card Trigger */}
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="group h-full min-h-[260px] bg-[#F9FAFB] border-2 border-dashed border-[#D0D5DD] hover:border-[#007a8c] hover:bg-[#F0F9FA] rounded-xl flex flex-col items-center justify-center gap-4 transition-all"
+            >
+              <div className="w-16 h-16 rounded-full bg-white border border-[#D0D5DD] flex items-center justify-center shadow-sm group-hover:bg-[#007a8c] transition-colors">
+                <svg className="w-8 h-8 text-[#667085] group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+              </div>
+              <span className="text-[#667085] font-bold text-sm group-hover:text-[#007a8c] transition-colors max-w-[150px] text-center">
+                Ajouter un nouveau fournisseur
+              </span>
+            </button>
 
-          {filteredProviders.map(p => (
-            <ProviderCard key={p.id} provider={p} />
-          ))}
-        </div>
+            {filteredProviders.map(p => (
+              <ProviderCard key={p.id} provider={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white border border-[#EAECF0] rounded-xl overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="table w-full border-collapse">
+                <thead>
+                  <tr className="bg-[#F9FAFB] border-b border-[#EAECF0]">
+                    <th className="w-12 px-6"><input type="checkbox" className="checkbox checkbox-sm checkbox-primary" disabled /></th>
+                    <th className="text-[12px] font-bold text-[#667085] uppercase tracking-wider px-6 py-4 text-left">Société</th>
+                    <th className="text-[12px] font-bold text-[#667085] uppercase tracking-wider px-6 py-4 text-left">Nom du contact</th>
+                    <th className="text-[12px] font-bold text-[#667085] uppercase tracking-wider px-6 py-4 text-left">Téléphone</th>
+                    <th className="text-[12px] font-bold text-[#667085] uppercase tracking-wider px-6 py-4 text-left">Email</th>
+                    <th className="text-[12px] font-bold text-[#667085] uppercase tracking-wider px-6 py-4 text-left">Site web</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#F2F4F7]">
+                  {filteredProviders.map(p => (
+                    <tr key={p.id} className="hover:bg-[#F9FAFB] transition-colors group">
+                      <td className="px-6 py-4"><input type="checkbox" className="checkbox checkbox-sm checkbox-primary" /></td>
+                      <td className="px-6 py-4 font-bold text-[#101828]">{p.company}</td>
+                      <td className="px-6 py-4 text-[#344054] font-medium">{p.name}</td>
+                      <td className="px-6 py-4 font-semibold text-[#344054] whitespace-nowrap">
+                        <a href={`tel:${p.tel}`} className="hover:text-[#007a8c] transition-colors">{p.tel}</a>
+                      </td>
+                      <td className="px-6 py-4">
+                        <a href={`mailto:${p.mail}`} className="text-[#667085] hover:text-[#007a8c] transition-colors font-medium truncate inline-block max-w-[200px] align-middle">{p.mail}</a>
+                      </td>
+                      <td className="px-6 py-4">
+                        {p.website ? (
+                          <a 
+                            href={p.website.startsWith('http') ? p.website : `https://${p.website}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-[#007a8c] font-semibold hover:underline"
+                          >
+                            {p.website.replace(/^https?:\/\//, '')}
+                          </a>
+                        ) : (
+                          <span className="text-gray-300">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {filteredProviders.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400">
