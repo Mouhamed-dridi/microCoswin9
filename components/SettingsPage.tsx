@@ -1,4 +1,41 @@
+
 import React, { useState, useEffect } from 'react';
+
+// Fix: Moved Section outside to resolve children prop type issues and avoid re-creation on every render
+interface SectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+const Section: React.FC<SectionProps> = ({ title, children }) => (
+  <div className="bg-white border border-[#EAECF0] rounded-xl p-6 mb-6 shadow-sm">
+    <h3 className="text-lg font-bold text-[#101828] mb-4">{title}</h3>
+    <div className="space-y-6">
+      {children}
+    </div>
+  </div>
+);
+
+// Fix: Moved NavItem outside and passed necessary state as props
+interface NavItemProps {
+  id: string;
+  label: string;
+  activeSection: string;
+  setActiveSection: (id: string) => void;
+}
+
+const NavItem: React.FC<NavItemProps> = ({ id, label, activeSection, setActiveSection }) => (
+  <button
+    onClick={() => setActiveSection(id)}
+    className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+      activeSection === id 
+        ? 'bg-[#007a8c]/10 text-[#007a8c]' 
+        : 'text-[#667085] hover:bg-[#F9FAFB] hover:text-[#101828]'
+    }`}
+  >
+    {label}
+  </button>
+);
 
 const SettingsPage: React.FC = () => {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
@@ -49,28 +86,6 @@ const SettingsPage: React.FC = () => {
     }
   };
 
-  const NavItem = ({ id, label }: { id: string, label: string }) => (
-    <button
-      onClick={() => setActiveSection(id)}
-      className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-        activeSection === id 
-          ? 'bg-[#007a8c]/10 text-[#007a8c]' 
-          : 'text-[#667085] hover:bg-[#F9FAFB] hover:text-[#101828]'
-      }`}
-    >
-      {label}
-    </button>
-  );
-
-  const Section = ({ title, children }: { title: string, children: React.ReactNode }) => (
-    <div className="bg-white border border-[#EAECF0] rounded-xl p-6 mb-6 shadow-sm">
-      <h3 className="text-lg font-bold text-[#101828] mb-4">{title}</h3>
-      <div className="space-y-6">
-        {children}
-      </div>
-    </div>
-  );
-
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
       <div className="mb-8 shrink-0">
@@ -81,10 +96,10 @@ const SettingsPage: React.FC = () => {
       <div className="flex flex-col lg:flex-row gap-8 overflow-hidden flex-1">
         {/* Sub-navigation */}
         <div className="lg:w-64 space-y-1 shrink-0">
-          <NavItem id="general" label="Général" />
-          <NavItem id="data" label="Sauvegarde et Données" />
-          <NavItem id="updates" label="Mises à jour" />
-          <NavItem id="about" label="À propos" />
+          <NavItem id="general" label="Général" activeSection={activeSection} setActiveSection={setActiveSection} />
+          <NavItem id="data" label="Sauvegarde et Données" activeSection={activeSection} setActiveSection={setActiveSection} />
+          <NavItem id="updates" label="Mises à jour" activeSection={activeSection} setActiveSection={setActiveSection} />
+          <NavItem id="about" label="À propos" activeSection={activeSection} setActiveSection={setActiveSection} />
         </div>
 
         {/* Content Area */}

@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { AppUser, Group, UserRole, UserStatus } from '../types';
 
 const USERS_KEY = 'capitalone_users';
 const GROUPS_KEY = 'capitalone_groups';
 const MACHINES_KEY = 'machines';
+const MAINTENANCE_TEAM_KEY = 'maintenanceTeam';
 
 const defaultGroups: Group[] = [
   { id: '1', name: 'Admin', description: 'Accès total au système' },
@@ -34,20 +34,33 @@ interface Machine {
   otherType?: string;
 }
 
+interface Technician {
+  id: string;
+  fullName: string;
+  tel: string;
+  group: string;
+  zone: string;
+  loginMobile: string;
+  password?: string;
+}
+
 const GroupesUtilisateursPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'users' | 'groups' | 'machines'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'groups' | 'machines' | 'maintenance'>('users');
   const [users, setUsers] = useState<AppUser[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
+  const [maintenanceTeam, setMaintenanceTeam] = useState<Technician[]>([]);
   
   // Modal states
   const [showUserModal, setShowUserModal] = useState(false);
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [showMachineModal, setShowMachineModal] = useState(false);
+  const [showTechnicianModal, setShowTechnicianModal] = useState(false);
   
   const [editingUser, setEditingUser] = useState<AppUser | null>(null);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const [editingMachine, setEditingMachine] = useState<Machine | null>(null);
+  const [editingTechnician, setEditingTechnician] = useState<Technician | null>(null);
 
   // Form states
   const [userForm, setUserForm] = useState<Omit<AppUser, 'id'>>({
@@ -74,10 +87,20 @@ const GroupesUtilisateursPage: React.FC = () => {
     otherType: ''
   });
 
+  const [technicianForm, setTechnicianForm] = useState<Omit<Technician, 'id'>>({
+    fullName: '',
+    tel: '',
+    group: 'Hydro',
+    zone: '',
+    loginMobile: '',
+    password: ''
+  });
+
   useEffect(() => {
     const storedUsers = localStorage.getItem(USERS_KEY);
     const storedGroups = localStorage.getItem(GROUPS_KEY);
     const storedMachines = localStorage.getItem(MACHINES_KEY);
+    const storedMaintenance = localStorage.getItem(MAINTENANCE_TEAM_KEY);
 
     if (storedUsers) {
       setUsers(JSON.parse(storedUsers));
@@ -98,6 +121,12 @@ const GroupesUtilisateursPage: React.FC = () => {
     } else {
       setMachines([]);
     }
+
+    if (storedMaintenance) {
+      setMaintenanceTeam(JSON.parse(storedMaintenance));
+    } else {
+      setMaintenanceTeam([]);
+    }
   }, []);
 
   const saveUsers = (newUsers: AppUser[]) => {
@@ -113,6 +142,11 @@ const GroupesUtilisateursPage: React.FC = () => {
   const saveMachines = (newMachines: Machine[]) => {
     setMachines(newMachines);
     localStorage.setItem(MACHINES_KEY, JSON.stringify(newMachines));
+  };
+
+  const saveMaintenanceTeam = (newTeam: Technician[]) => {
+    setMaintenanceTeam(newTeam);
+    localStorage.setItem(MAINTENANCE_TEAM_KEY, JSON.stringify(newTeam));
   };
 
   const resetUserForm = () => {
@@ -135,6 +169,17 @@ const GroupesUtilisateursPage: React.FC = () => {
       numFacture: '',
       type: 'Hydraulic',
       otherType: ''
+    });
+  };
+
+  const resetTechnicianForm = () => {
+    setTechnicianForm({
+      fullName: '',
+      tel: '',
+      group: 'Hydro',
+      zone: '',
+      loginMobile: '',
+      password: ''
     });
   };
 
@@ -180,6 +225,20 @@ const GroupesUtilisateursPage: React.FC = () => {
     resetMachineForm();
   };
 
+  const handleTechnicianSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingTechnician) {
+      const updated = maintenanceTeam.map(t => t.id === editingTechnician.id ? { ...t, ...technicianForm } : t);
+      saveMaintenanceTeam(updated);
+    } else {
+      const newTech: Technician = { ...technicianForm, id: Date.now().toString() };
+      saveMaintenanceTeam([...maintenanceTeam, newTech]);
+    }
+    setShowTechnicianModal(false);
+    setEditingTechnician(null);
+    resetTechnicianForm();
+  };
+
   const deleteUser = (id: string) => {
     if (window.confirm('Supprimer cet utilisateur ?')) {
       saveUsers(users.filter(u => u.id !== id));
@@ -195,6 +254,12 @@ const GroupesUtilisateursPage: React.FC = () => {
   const deleteMachine = (id: string) => {
     if (window.confirm('Supprimer cette machine ?')) {
       saveMachines(machines.filter(m => m.id !== id));
+    }
+  };
+
+  const deleteTechnician = (id: string) => {
+    if (window.confirm('Supprimer ce technicien ?')) {
+      saveMaintenanceTeam(maintenanceTeam.filter(t => t.id !== id));
     }
   };
 
@@ -222,6 +287,12 @@ const GroupesUtilisateursPage: React.FC = () => {
     setEditingMachine(m);
     setMachineForm({ ...m });
     setShowMachineModal(true);
+  };
+
+  const openEditTechnician = (t: Technician) => {
+    setEditingTechnician(t);
+    setTechnicianForm({ ...t, password: t.password || '' });
+    setShowTechnicianModal(true);
   };
 
   return (
@@ -260,6 +331,15 @@ const GroupesUtilisateursPage: React.FC = () => {
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                 Machines
+              </button>
+            </li>
+            <li>
+              <button 
+                onClick={() => setActiveTab('maintenance')}
+                className={activeTab === 'maintenance' ? 'bg-[#007a8c] text-white' : 'text-[#667085]'}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                Équipe Maintenance
               </button>
             </li>
           </ul>
@@ -367,7 +447,7 @@ const GroupesUtilisateursPage: React.FC = () => {
                 </table>
               </div>
             </div>
-          ) : (
+          ) : activeTab === 'machines' ? (
             <div className="bg-white border border-[#EAECF0] rounded-xl shadow-sm overflow-hidden">
               <div className="p-6 border-b border-[#EAECF0] flex justify-between items-center">
                 <h2 className="text-lg font-bold text-[#101828]">Liste des Machines</h2>
@@ -412,6 +492,59 @@ const GroupesUtilisateursPage: React.FC = () => {
                       <tr>
                         <td colSpan={6} className="px-6 py-10 text-center text-[#667085]">
                           Aucune machine enregistrée.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white border border-[#EAECF0] rounded-xl shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-[#EAECF0] flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-bold text-[#101828]">Équipe de Maintenance</h2>
+                  <p className="text-xs text-[#667085]">Gérez les techniciens et leurs accès mobile</p>
+                </div>
+                <button 
+                  onClick={() => { setEditingTechnician(null); resetTechnicianForm(); setShowTechnicianModal(true); }}
+                  className="btn btn-sm h-10 bg-[#007a8c] hover:bg-[#006675] text-white border-none normal-case px-4"
+                >
+                  + Créer un technicien maintenance
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="table table-zebra w-full">
+                  <thead className="bg-[#F9FAFB]">
+                    <tr className="text-[#667085] text-xs uppercase">
+                      <th className="px-6 py-4">Nom complet</th>
+                      <th className="px-6 py-4">Téléphone / WhatsApp</th>
+                      <th className="px-6 py-4">Groupe</th>
+                      <th className="px-6 py-4">Zone</th>
+                      <th className="px-6 py-4">Login Mobile App</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-sm">
+                    {maintenanceTeam.map(tech => (
+                      <tr key={tech.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 font-bold text-[#101828]">{tech.fullName}</td>
+                        <td className="px-6 py-4 text-[#667085] font-medium">{tech.tel}</td>
+                        <td className="px-6 py-4">
+                          <span className="badge badge-ghost font-bold text-xs uppercase">{tech.group}</span>
+                        </td>
+                        <td className="px-6 py-4 text-[#667085]">{tech.zone}</td>
+                        <td className="px-6 py-4 font-mono text-xs font-bold text-[#007a8c]">{tech.loginMobile}</td>
+                        <td className="px-6 py-4 text-right space-x-2">
+                          <button onClick={() => openEditTechnician(tech)} className="text-[#007a8c] hover:underline font-bold">Modifier</button>
+                          <button onClick={() => deleteTechnician(tech.id)} className="text-red-600 hover:underline font-bold">Supprimer</button>
+                        </td>
+                      </tr>
+                    ))}
+                    {maintenanceTeam.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-10 text-center text-[#667085]">
+                          Aucun technicien dans l'équipe.
                         </td>
                       </tr>
                     )}
@@ -621,10 +754,113 @@ const GroupesUtilisateursPage: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-6 border-t flex justify-end gap-3">
+              <div className="pt-6 border-t border-[#EAECF0] flex justify-end gap-3">
                 <button type="button" onClick={() => setShowMachineModal(false)} className="btn btn-ghost normal-case text-gray-500">Annuler</button>
                 <button type="submit" className="btn bg-[#007a8c] text-white hover:bg-[#006675] border-none normal-case px-10">
                   {editingMachine ? 'Mettre à jour' : 'Enregistrer'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Technicien Maintenance */}
+      {showTechnicianModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[#101828]/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[500px] border border-[#EAECF0] overflow-hidden">
+            <div className="p-6 border-b border-[#EAECF0] flex items-center justify-between bg-[#F9FAFB]">
+              <h2 className="text-xl font-bold text-[#101828]">{editingTechnician ? 'Modifier Technicien' : 'Nouveau Technicien Maintenance'}</h2>
+              <button onClick={() => setShowTechnicianModal(false)} className="text-[#667085] hover:text-[#101828]">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <form onSubmit={handleTechnicianSubmit} className="p-8 space-y-6">
+              {/* USERS INFO SECTION */}
+              <div className="space-y-4">
+                <h3 className="text-[11px] font-bold text-[#667085] uppercase tracking-wider">Users Info</h3>
+                <div className="space-y-1">
+                  <label className="text-gray-700 font-medium text-sm block">Nom complet <span className="text-red-500 font-bold">*</span></label>
+                  <input 
+                    required 
+                    type="text" 
+                    placeholder="Mohamed Trabelsi"
+                    className="input input-bordered w-full h-11" 
+                    value={technicianForm.fullName} 
+                    onChange={e => setTechnicianForm({...technicianForm, fullName: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-gray-700 font-medium text-sm block">Téléphone / WhatsApp <span className="text-red-500 font-bold">*</span></label>
+                  <input 
+                    required 
+                    type="tel" 
+                    placeholder="+216 98 123 456"
+                    className="input input-bordered w-full h-11" 
+                    value={technicianForm.tel} 
+                    onChange={e => setTechnicianForm({...technicianForm, tel: e.target.value})} 
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-gray-700 font-medium text-sm block">Groupe <span className="text-red-500 font-bold">*</span></label>
+                    <select 
+                      className="select select-bordered w-full h-11 min-h-[44px]" 
+                      value={technicianForm.group} 
+                      onChange={e => setTechnicianForm({...technicianForm, group: e.target.value})}
+                      required
+                    >
+                      <option value="Hydro">Hydro</option>
+                      <option value="Électronique">Électronique</option>
+                      <option value="Alataile">Alataile</option>
+                      <option value="Autre">Autre</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-gray-700 font-medium text-sm block">Zone <span className="text-red-500 font-bold">*</span></label>
+                    <input 
+                      required 
+                      type="text" 
+                      placeholder="Zone 2"
+                      className="input input-bordered w-full h-11" 
+                      value={technicianForm.zone} 
+                      onChange={e => setTechnicianForm({...technicianForm, zone: e.target.value})} 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-[#EAECF0] pt-4 space-y-4">
+                <h3 className="text-[11px] font-bold text-[#667085] uppercase tracking-wider">Login Mobile App</h3>
+                <div className="space-y-1">
+                  <label className="text-gray-700 font-medium text-sm block">Login <span className="text-red-500 font-bold">*</span></label>
+                  <input 
+                    required 
+                    type="text" 
+                    placeholder="technicien1"
+                    className="input input-bordered w-full h-11" 
+                    value={technicianForm.loginMobile} 
+                    onChange={e => setTechnicianForm({...technicianForm, loginMobile: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-gray-700 font-medium text-sm block">Password <span className="text-red-500 font-bold">*</span></label>
+                  <input 
+                    required 
+                    type="password" 
+                    placeholder="••••••••" 
+                    className="input input-bordered w-full h-11" 
+                    value={technicianForm.password} 
+                    onChange={e => setTechnicianForm({...technicianForm, password: e.target.value})} 
+                  />
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-[#EAECF0] flex justify-end gap-3">
+                <button type="button" onClick={() => setShowTechnicianModal(false)} className="btn btn-ghost normal-case text-gray-500">Annuler</button>
+                <button type="submit" className="btn bg-[#007a8c] text-white hover:bg-[#006675] border-none normal-case px-10">
+                  {editingTechnician ? 'Mettre à jour' : 'Enregistrer'}
                 </button>
               </div>
             </form>
