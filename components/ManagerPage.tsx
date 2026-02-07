@@ -1,9 +1,12 @@
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { User } from '../types';
 import { exportDatabase } from '../services/database';
 import OperatorPage from './OperatorPage';
 import CRMPage from './CRMPage';
+import SettingsPage from './SettingsPage';
+import GroupesUtilisateursPage from './GroupesUtilisateursPage';
 
 interface ManagerPageProps {
   user: User;
@@ -453,6 +456,10 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onLogout, onViewDetail 
             </div>
           ) : activeTab === 'crm' ? (
             <CRMPage />
+          ) : activeTab === 'settings' ? (
+            <SettingsPage />
+          ) : activeTab === 'groups-users' ? (
+            <GroupesUtilisateursPage />
           ) : (
             /* PLACEHOLDER FOR OTHER MODULES */
             <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400">
@@ -461,11 +468,6 @@ const ManagerPage: React.FC<ManagerPageProps> = ({ user, onLogout, onViewDetail 
                </div>
                <h2 className="text-xl font-bold text-slate-800 capitalize mb-2">{activeTab.replace('-', ' ')}</h2>
                <p className="max-w-sm text-center font-medium">Ce module est en cours d'optimisation pour votre flux de travail d'entreprise.</p>
-               {activeTab === 'settings' && (
-                  <button onClick={exportDatabase} className="mt-8 btn bg-white border-[#D0D5DD] text-[#344054] hover:bg-[#F9FAFB] font-semibold text-sm h-11 px-6 rounded-lg shadow-sm">
-                    Générer un instantané de la base de données
-                  </button>
-               )}
             </div>
           )}
         </main>

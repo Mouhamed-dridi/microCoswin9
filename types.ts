@@ -27,8 +27,23 @@ export interface Ticket {
 
 export interface User {
   username: string;
-  role: 'operator' | 'manager';
+  role: 'operator' | 'manager' | 'maintenance';
   groupIds?: string[];
+}
+
+export type UserRole = 'Operator' | 'Manager' | 'Maintenance';
+export type UserStatus = 'Actif' | 'Inactif';
+
+export interface AppUser {
+  id: string;
+  name: string;
+  login: string;
+  telWhatsapp?: string;
+  email?: string; // Kept for compatibility if needed
+  password?: string;
+  role: UserRole;
+  group: string;
+  status: UserStatus;
 }
 
 export interface Group {
