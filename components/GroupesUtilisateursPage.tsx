@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import * as XLSX from 'xlsx';
 import { AppUser, Group, UserRole, UserStatus } from '../types';
 
 const USERS_KEY = 'capitalone_users';
@@ -239,6 +240,22 @@ const GroupesUtilisateursPage: React.FC = () => {
     resetTechnicianForm();
   };
 
+  const handleExportMachinesExcel = () => {
+    const headers = ['NOM DE MACHINE', 'FOURNISSEUR', 'DATE D\'ACHAT', 'NUM FACTURE', 'TYPE'];
+    const rows = machines.map(m => [
+      m.machineName || '',
+      m.vendor || '',
+      m.dateAchat || '',
+      m.numFacture || '',
+      m.type === 'Other Electronic' ? (m.otherType || 'Other Electronic') : (m.type || '')
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Machines");
+    XLSX.writeFile(wb, `machines_export_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
   const deleteUser = (id: string) => {
     if (window.confirm('Supprimer cet utilisateur ?')) {
       saveUsers(users.filter(u => u.id !== id));
@@ -451,12 +468,21 @@ const GroupesUtilisateursPage: React.FC = () => {
             <div className="bg-white border border-[#EAECF0] rounded-xl shadow-sm overflow-hidden">
               <div className="p-6 border-b border-[#EAECF0] flex justify-between items-center">
                 <h2 className="text-lg font-bold text-[#101828]">Liste des Machines</h2>
-                <button 
-                  onClick={() => { setEditingMachine(null); resetMachineForm(); setShowMachineModal(true); }}
-                  className="btn btn-sm h-10 bg-[#007a8c] hover:bg-[#006675] text-white border-none normal-case px-4"
-                >
-                  + Créer une machine
-                </button>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={handleExportMachinesExcel}
+                    className="btn btn-sm h-10 bg-[#007a8c] hover:bg-[#006675] text-white border-none normal-case px-4 flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    Télécharger en Excel
+                  </button>
+                  <button 
+                    onClick={() => { setEditingMachine(null); resetMachineForm(); setShowMachineModal(true); }}
+                    className="btn btn-sm h-10 bg-[#007a8c] hover:bg-[#006675] text-white border-none normal-case px-4"
+                  >
+                    + Créer une machine
+                  </button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="table table-zebra w-full">
