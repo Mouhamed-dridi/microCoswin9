@@ -12,23 +12,21 @@ const App: React.FC = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
-  // Global error handler to redirect to login on "crash" or unexpected behavior
   useEffect(() => {
-    const handleError = () => {
-      console.error("Unexpected app behavior detected. Redirecting to login.");
-      handleLogout();
+    const initApp = async () => {
+      try {
+        const activeUser = await getSession();
+        if (activeUser) {
+          setUser(activeUser);
+        }
+      } catch (err) {
+        console.error('App initialization failed');
+      } finally {
+        setLoading(false);
+      }
     };
-    window.addEventListener('error', handleError);
-    return () => window.removeEventListener('error', handleError);
-  }, []);
 
-  // Check for existing session immediately on app load to ensure Login is entry point
-  useEffect(() => {
-    const activeUser = getSession();
-    if (activeUser) {
-      setUser(activeUser);
-    }
-    setLoading(false);
+    initApp();
   }, []);
 
   const handleLogin = (authenticatedUser: User) => {
@@ -36,8 +34,8 @@ const App: React.FC = () => {
     setShowSuccess(false);
   };
 
-  const handleLogout = () => {
-    clearSession();
+  const handleLogout = async () => {
+    await clearSession();
     setUser(null);
     setShowSuccess(false);
     setSelectedTicketId(null);
@@ -53,13 +51,13 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#F2F4F7]">
-        <span className="loading loading-dots loading-lg text-[#007a8c]"></span>
+      <div className="flex flex-col h-screen items-center justify-center bg-[#F2F4F7] p-8 text-center">
+        <span className="loading loading-dots loading-lg text-[#007a8c] mb-4"></span>
+        <p className="text-[#667085] font-medium">Chargement de MicroFix...</p>
       </div>
     );
   }
 
-  // FORCE: Login page is the default entry point if no session exists
   if (!user) {
     return <LoginPage onLogin={handleLogin} />;
   }
@@ -96,7 +94,7 @@ const App: React.FC = () => {
             </div>
             <h2 className="text-2xl font-bold text-[#101828] mb-3">Rapport Soumis</h2>
             <p className="text-[#667085] mb-10 font-medium">
-              Merci, {user.username}. Votre demande de maintenance a été enregistrée avec succès et transmise à l'équipe technique.
+              Merci, {user.username}. Votre demande de maintenance a été enregistrée avec succès.
             </p>
             <div className="space-y-3">
               <button 

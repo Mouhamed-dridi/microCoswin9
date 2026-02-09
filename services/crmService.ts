@@ -9,7 +9,7 @@ export interface Provider {
   type: 'Personnel' | 'Entreprise';
 }
 
-const CRM_STORAGE_KEY = 'capitalone_providers';
+const PROVIDERS_KEY = 'capitalone_providers';
 
 const initialProviders: Provider[] = [
   {
@@ -114,21 +114,21 @@ const initialProviders: Provider[] = [
   }
 ];
 
-export const getProviders = (): Provider[] => {
-  const data = localStorage.getItem(CRM_STORAGE_KEY);
-  if (!data) {
-    localStorage.setItem(CRM_STORAGE_KEY, JSON.stringify(initialProviders));
+export const getProviders = async (): Promise<Provider[]> => {
+  const dataRaw = localStorage.getItem(PROVIDERS_KEY);
+  if (!dataRaw) {
+    localStorage.setItem(PROVIDERS_KEY, JSON.stringify(initialProviders));
     return initialProviders;
   }
-  return JSON.parse(data);
+  return JSON.parse(dataRaw);
 };
 
-export const saveProviders = (providers: Provider[]) => {
-  localStorage.setItem(CRM_STORAGE_KEY, JSON.stringify(providers));
+export const saveProviders = async (providers: Provider[]) => {
+  localStorage.setItem(PROVIDERS_KEY, JSON.stringify(providers));
 };
 
-export const addProvider = (provider: Omit<Provider, 'id' | 'createdAt'>): Provider => {
-  const providers = getProviders();
+export const addProvider = async (provider: Omit<Provider, 'id' | 'createdAt'>): Promise<Provider> => {
+  const providers = await getProviders();
   const now = new Date();
   const dateStr = `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
 
@@ -138,6 +138,6 @@ export const addProvider = (provider: Omit<Provider, 'id' | 'createdAt'>): Provi
     createdAt: dateStr,
   };
   const updated = [newProvider, ...providers];
-  saveProviders(updated);
+  await saveProviders(updated);
   return newProvider;
 };

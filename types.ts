@@ -1,34 +1,33 @@
 
 export type UrgencyLevel = 'Low' | 'Medium' | 'High' | 'Critical – line stopped';
-export type TicketStatus = 'Open' | 'In progress' | 'Closed';
+export type TicketStatus = 'Open' | 'In Progress' | 'Closed' | 'Archivé';
 export type ProblemType = 'Mechanical' | 'Electrical' | 'Hydraulic' | 'Software/PLC' | 'Sensor' | 'Other';
 export type LocationType = 'Zone 1' | 'Zone 2' | 'Zone 3' | 'Other';
 
-export interface Ticket {
-  id: number;
+export interface Comment {
   date: string;
-  startOperationDate?: string | null;
-  endOperationDate?: string | null;
-  closedTime?: string | null;
+  text: string;
+}
+
+export interface Ticket {
+  ticketId: string;
+  createdDate: string;
+  user: string; // Operator Name
+  userId: string; // Matricule
   machine: string;
   location: LocationType;
-  type: ProblemType;
-  urgency: UrgencyLevel;
-  description: string;
+  proties: UrgencyLevel;
+  problemeKind: ProblemType;
+  problemeDiscartion: string;
   status: TicketStatus;
-  reporter: string;
-  operatorName: string;
-  matricule: string;
-  assignedTo?: string;
-  maintenanceMatricule?: string;
-  image?: string | null;
-  resolution?: string;
+  assignedTo: string;
+  comments: Comment[];
+  attachments: any[];
 }
 
 export interface User {
   username: string;
   role: 'operator' | 'manager' | 'maintenance';
-  groupIds?: string[];
 }
 
 export type UserRole = 'Operator' | 'Manager' | 'Maintenance';
@@ -38,9 +37,6 @@ export interface AppUser {
   id: string;
   name: string;
   login: string;
-  telWhatsapp?: string;
-  email?: string; // Kept for compatibility if needed
-  password?: string;
   role: UserRole;
   group: string;
   status: UserStatus;
@@ -49,10 +45,4 @@ export interface AppUser {
 export interface Group {
   id: string;
   name: string;
-  description: string;
-}
-
-export interface AppPreferences {
-  darkMode: boolean;
-  language: 'en' | 'fr' | 'es' | 'de';
 }
