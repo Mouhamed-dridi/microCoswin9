@@ -127,6 +127,32 @@ const GroupesUtilisateursPage: React.FC = () => {
       return;
     }
 
+    if (activeTab === 'groups') {
+      try {
+        const newGroup = {
+          id: Date.now().toString(),
+          name: formData.name
+        };
+
+        const res = await fetch('/api/groups', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newGroup)
+        });
+
+        if (res.ok) {
+          setShowModal(false);
+          setFormData({});
+          loadAll();
+        } else {
+          alert("Erreur lors de l'ajout du groupe");
+        }
+      } catch (err) {
+        console.error("Save group failed", err);
+      }
+      return;
+    }
+
     // Default logic for other tabs (using localStorage as before)
     const id = Date.now().toString();
     const newItem = { ...formData, id, status: formData.status || 'Actif' };
@@ -198,6 +224,19 @@ const GroupesUtilisateursPage: React.FC = () => {
             setter(updated);
           } else {
             alert("Erreur lors de la suppression");
+          }
+        } catch (err) {
+          console.error("Delete failed", err);
+        }
+      } else if (key === GROUPS_KEY) {
+        try {
+          const res = await fetch(`/api/groups/${id}`, {
+            method: 'DELETE'
+          });
+          if (res.ok) {
+            setter(updated);
+          } else {
+            alert("Erreur lors de la suppression du groupe");
           }
         } catch (err) {
           console.error("Delete failed", err);
@@ -432,11 +471,13 @@ const GroupesUtilisateursPage: React.FC = () => {
                     <input required placeholder="Numéro de téléphone" className="input input-bordered w-full text-sm h-11" value={formData.telephone || ''} onChange={e => setFormData({ ...formData, telephone: e.target.value })} />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase">GROUPE *</label>
+                    <label className="label p-0">
+                      <span className="label-text font-bold uppercase text-xs text-gray-500">GROUPE *</span>
+                    </label>
                     <select required className="select select-bordered w-full text-sm h-11" value={formData.groupe || ''} onChange={e => setFormData({ ...formData, groupe: e.target.value })}>
                       <option value="">Sélectionner Groupe</option>
                       {groups && groups.map((g: any) => (
-                        <option key={g.id} value={g.name}>{g.name}</option>
+                        <option key={g.id} value={g.name || g.nom}>{g.name || g.nom}</option>
                       ))}
                     </select>
                   </div>

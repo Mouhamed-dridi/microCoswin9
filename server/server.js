@@ -162,6 +162,34 @@ app.get('/api/groups', async (req, res) => {
   }
 });
 
+app.post('/api/groups', async (req, res) => {
+  try {
+    const groups = await safeReadJson(GROUPS_FILE);
+    const newGroup = req.body;
+    groups.push(newGroup);
+    await fs.writeJson(GROUPS_FILE, groups, { spaces: 2 });
+    res.status(201).json(newGroup);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
+app.delete('/api/groups/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    let groups = await safeReadJson(GROUPS_FILE);
+    const filtered = groups.filter(g => g.id !== id);
+    if (groups.length !== filtered.length) {
+      await fs.writeJson(GROUPS_FILE, filtered, { spaces: 2 });
+      res.status(200).json({ message: 'Deleted' });
+    } else {
+      res.status(404).json({ error: 'Not found' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
 app.get('/api/maintenanceTeam', async (req, res) => {
   try {
     console.log('GET /api/maintenanceTeam called');
