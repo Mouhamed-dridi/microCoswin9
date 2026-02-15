@@ -1,0 +1,47 @@
+Project Structure: MicroFix V10 (Full-Stack)
+
+1. Overall Folder Structure
+/                    - Project root
+├── index.html       - Entry HTML file (loads Tailwind/DaisyUI via CDN)
+├── index.tsx        - React mounting point
+├── App.tsx          - Main application logic, routing, and session state
+├── types.ts         - Shared TypeScript interfaces for Tickets, Users, and CRM
+├── components/      - UI Components (LoginPage, ManagerPage, OperatorPage, etc.)
+├── services/        - Data persistence layer (Fetch API for Backend / localStorage backup)
+├── server/          - Backend source code (Express server)
+└── databases/       - JSON-based flat-file database storage
+
+2. Frontend (React)
+- Components: Each page (Manager, Operator, CRM, Settings) is modularized.
+- State Management: Uses React 'useState' and 'useEffect' for local state.
+- Data Flow: 
+  * Operators submit forms -> Service sends POST to Backend.
+  * Managers view dashboard -> Service sends GET to Backend.
+- LocalStorage: Used for caching user session (microfix_session) and preferences (theme/lang).
+
+3. Backend (Express)
+- server/server.js: Entry point. Sets up an Express server on port 3001.
+- Middleware: Uses CORS to allow communication with the frontend and body-parser for JSON requests.
+- Routes:
+  * GET  /api/tickets       - Reads databases/tickets.json and returns all records.
+  * POST /api/tickets       - Appends a new ticket to databases/tickets.json.
+  * POST /api/login         - Validates credentials against databases/users.json.
+  * GET  /api/providers     - Retrieves vendor list from databases/providers.json.
+
+4. Frontend-Backend Connection
+- Connection: The frontend uses the 'fetch' API to communicate with http://localhost:3001/api.
+- Persistence: Data is read/written to the files in the /databases folder, ensuring data survives server restarts.
+
+5. Run Instructions
+- Step 1: Install dependencies
+  npm install
+- Step 2: Start the Backend
+  node server/server.js
+- Step 3: Start the Frontend (Development)
+  npm start
+
+6. Key Process: Ticket Submission Flow
+1. Operator fills out form in 'OperatorPage.tsx'.
+2. Submit triggers a fetch POST request to 'localhost:3001/api/tickets'.
+3. Backend receives data, reads 'databases/tickets.json', pushes the new object, and saves the file.
+4. Manager logs in, 'ManagerPage.tsx' calls GET 'localhost:3001/api/tickets', and populates the table with live data.

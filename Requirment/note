@@ -1,0 +1,30 @@
+intall those to can run project 
+Project tech stack from package.json and requirements:
+- Node.js >= 18.0.0 (recommended 20.x LTS)
+- Frontend: react@19.2.4, react-dom@19.2.4, xlsx@0.18.5, tailwindcss@latest, daisyui@latest
+- Backend: express@4.18.2, cors@2.8.5, body-parser@1.20.2, fs-extra@11.1.1, nodemon@3.0.1 (dev)
+
+Task: Generate three files in project root to make installation and running super easy:
+
+
+   - Step 1: Install Node.js (link to https://nodejs.org, check version node -v)
+   - Step 2: npm install (install all deps from package.json)
+   - Step 3: Run backend → nodemon server/server.js or node server/server.js
+   - Step 4: Run frontend → npm start
+   - Step 5: Open http://localhost:3000 in browser
+   - Troubleshooting: port conflict, npm cache clean, delete node_modules & reinstall
+   - Optional: npm run dev (if concurrent script added)
+
+
+2. setup.bat (Windows batch file)
+   - Check Node.js version
+   - npm install
+   - Start backend with nodemon (or node)
+   - Start frontend with npm start
+   - Use start command to open new terminals or concurrent if possible
+   - Pause at end with message "App running - open http://localhost:3000"
+
+
+
+
+No other text or explanations.

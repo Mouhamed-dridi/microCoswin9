@@ -14,27 +14,83 @@ const GroupesUtilisateursPage: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [machines, setMachines] = useState<any[]>([]);
   const [maintenanceTeam, setMaintenanceTeam] = useState<any[]>([]);
-  
+
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<any>({});
 
-  const loadAll = () => {
-    const u = localStorage.getItem(USERS_KEY);
-    setUsers(u ? JSON.parse(u) : []);
-    const g = localStorage.getItem(GROUPS_KEY);
-    setGroups(g ? JSON.parse(g) : []);
-    const m = localStorage.getItem(MACHINES_KEY);
-    setMachines(m ? JSON.parse(m) : []);
-    const mt = localStorage.getItem(MAINTENANCE_TEAM_KEY);
-    setMaintenanceTeam(mt ? JSON.parse(mt) : []);
+  const loadAll = async () => {
+    try {
+      // LocalStorage for users and groups for now (as in original)
+      const u = localStorage.getItem(USERS_KEY);
+      setUsers(u ? JSON.parse(u) : []);
+      const g = localStorage.getItem(GROUPS_KEY);
+      setGroups(g ? JSON.parse(g) : []);
+
+      // Fetch machines from backend
+      const resM = await fetch('/api/machines');
+      if (resM.ok) {
+        const mData = await resM.json();
+        setMachines(mData);
+      }
+
+      // Fetch maintenance team from backend
+      const resMT = await fetch('/api/maintenanceTeam');
+      if (resMT.ok) {
+        const mtData = await resMT.json();
+        setMaintenanceTeam(mtData);
+      }
+    } catch (err) {
+      console.error("Load failed", err);
+    }
   };
 
   useEffect(() => { loadAll(); }, []);
 
-  const handleSaveItem = (e: React.FormEvent) => {
+  const handleSaveItem = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (activeTab === 'machines') {
+      try {
+        // Collect all field values into object
+        const newMachine = {
+          id: Date.now().toString(),
+          nameOrCode: formData.nameOrCode,
+          provider: formData.provider,
+          location: formData.location,
+          responsible: formData.responsible,
+          type: formData.type
+        };
+
+        // Load current machines
+        const res = await fetch('/api/machines');
+        const currentMachines = res.ok ? await res.json() : [];
+
+        // Add new machine to array
+        const updatedMachines = [...currentMachines, newMachine];
+
+        // POST full array to /api/machines
+        const saveRes = await fetch('/api/machines', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedMachines)
+        });
+
+        if (saveRes.ok) {
+          setShowModal(false);
+          setFormData({});
+          loadAll(); // Refresh table
+        } else {
+          throw new Error("POST failed");
+        }
+      } catch (err) {
+        console.error("Erreur de sauvegarde", err);
+        alert("Erreur de sauvegarde");
+      }
+      return;
+    }
+
+    // Default logic for other tabs (using localStorage as before)
     const id = Date.now().toString();
-    // Ensure default status for users
     const newItem = { ...formData, id, status: formData.status || 'Actif' };
 
     let key = '';
@@ -43,7 +99,6 @@ const GroupesUtilisateursPage: React.FC = () => {
 
     if (activeTab === 'users') { key = USERS_KEY; currentItems = users; setter = setUsers; }
     else if (activeTab === 'groups') { key = GROUPS_KEY; currentItems = groups; setter = setGroups; }
-    else if (activeTab === 'machines') { key = MACHINES_KEY; currentItems = machines; setter = setMachines; }
     else { key = MAINTENANCE_TEAM_KEY; currentItems = maintenanceTeam; setter = setMaintenanceTeam; }
 
     const updated = [...currentItems, newItem];
@@ -53,11 +108,29 @@ const GroupesUtilisateursPage: React.FC = () => {
     setFormData({});
   };
 
-  const deleteItem = (key: string, id: string, items: any[], setter: (val: any[]) => void) => {
+  const deleteItem = async (key: string, id: string, items: any[], setter: (val: any[]) => void) => {
     if (confirm('Supprimer cet élément ?')) {
       const updated = items.filter(i => i.id !== id);
-      localStorage.setItem(key, JSON.stringify(updated));
-      setter(updated);
+
+      if (key === MACHINES_KEY) {
+        try {
+          const res = await fetch('/api/machines', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updated)
+          });
+          if (res.ok) {
+            setter(updated);
+          } else {
+            alert("Erreur lors de la suppression");
+          }
+        } catch (err) {
+          console.error("Delete failed", err);
+        }
+      } else {
+        localStorage.setItem(key, JSON.stringify(updated));
+        setter(updated);
+      }
     }
   };
 
@@ -136,10 +209,12 @@ const GroupesUtilisateursPage: React.FC = () => {
                   {activeTab === 'machines' && machines.map(m => (
                     <tr key={m.id}>
                       <td className="px-6 py-4">
-                        <div className="font-bold">{m.machineName}</div>
-                        <div className="text-xs text-[#667085]">{m.vendor}</div>
+                        <div className="font-bold">{m.nameOrCode}</div>
+                        <div className="text-xs text-[#667085]">{m.provider} - {m.type}</div>
                       </td>
-                      <td className="px-6 py-4 text-right"><button onClick={() => deleteItem(MACHINES_KEY, m.id, machines, setMachines)} className="text-red-600 font-bold">Supprimer</button></td>
+                      <td className="px-6 py-4 text-right">
+                        <button onClick={() => deleteItem(MACHINES_KEY, m.id, machines, setMachines)} className="text-red-600 font-bold">Supprimer</button>
+                      </td>
                     </tr>
                   ))}
                   {activeTab === 'maintenance' && maintenanceTeam.map(t => (
@@ -163,36 +238,74 @@ const GroupesUtilisateursPage: React.FC = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-[#EAECF0]">
             <div className="p-6 border-b border-[#EAECF0] bg-[#F9FAFB]">
-               <h3 className="text-lg font-bold">Ajouter un élément ({activeTab})</h3>
+              <h3 className="text-lg font-bold">{activeTab === 'machines' ? "Ajouter un élément (machines)" : `Ajouter un élément (${activeTab})`}</h3>
             </div>
             <form onSubmit={handleSaveItem} className="p-6 space-y-4">
               {activeTab === 'users' && (
                 <>
-                  <input required placeholder="Nom complet" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({...formData, name: e.target.value})} />
-                  <input required placeholder="Login" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({...formData, login: e.target.value})} />
-                  <select className="select select-bordered w-full text-sm h-11" onChange={e => setFormData({...formData, role: e.target.value})}>
+                  <input required placeholder="Nom complet" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                  <input required placeholder="Login" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, login: e.target.value })} />
+                  <select className="select select-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, role: e.target.value })}>
                     <option value="">Sélectionner Rôle</option>
                     <option value="Operator">Opérateur</option>
                     <option value="Manager">Manager</option>
                     <option value="Maintenance">Maintenance</option>
                   </select>
-                  <input placeholder="Groupe (ex: Equipe A)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({...formData, group: e.target.value})} />
+                  <input placeholder="Groupe (ex: Equipe A)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, group: e.target.value })} />
                 </>
               )}
               {activeTab === 'groups' && (
-                <input required placeholder="Nom du groupe" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({...formData, name: e.target.value})} />
+                <input required placeholder="Nom du groupe" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, name: e.target.value })} />
               )}
               {activeTab === 'machines' && (
                 <>
-                  <input required placeholder="Nom de la machine" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({...formData, machineName: e.target.value})} />
-                  <input required placeholder="Fournisseur / Fabricant" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({...formData, vendor: e.target.value})} />
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Nom ou Code *</label>
+                    <input required placeholder="Nom de la machine ou code (ex: G33)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, nameOrCode: e.target.value })} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Fournisseur *</label>
+                    <input required placeholder="Fournisseur / Fabricant (ex: MicroIndust)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, provider: e.target.value })} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Location *</label>
+                    <input required placeholder="Zone / Emplacement (ex: Zone 2)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, location: e.target.value })} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Responsable Maintenance Team *</label>
+                    <select required className="select select-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, responsible: e.target.value })}>
+                      <option value="">Choisir un responsable</option>
+                      {maintenanceTeam && maintenanceTeam.length > 0 ? (
+                        maintenanceTeam.map((t: any) => (
+                          <option key={t.id} value={t.fullName}>{t.fullName}</option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="Technicien 1">Technicien 1</option>
+                          <option value="Technicien 2">Technicien 2</option>
+                          <option value="Ahmed">Ahmed</option>
+                          <option value="Mohamed">Mohamed</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Type *</label>
+                    <select required className="select select-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, type: e.target.value })}>
+                      <option value="Hydro">Hydro</option>
+                      <option value="Electric">Électrique</option>
+                      <option value="Robot">Robot</option>
+                      <option value="Laser">Laser</option>
+                      <option value="Other">Autre</option>
+                    </select>
+                  </div>
                 </>
               )}
               {activeTab === 'maintenance' && (
                 <>
-                  <input required placeholder="Nom complet" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({...formData, fullName: e.target.value})} />
-                  <input required placeholder="Téléphone" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({...formData, tel: e.target.value})} />
-                  <input required placeholder="Spécialité (Hydro, Elec, PLC)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({...formData, group: e.target.value})} />
+                  <input required placeholder="Nom complet" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, fullName: e.target.value })} />
+                  <input required placeholder="Téléphone" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, tel: e.target.value })} />
+                  <input required placeholder="Spécialité (Hydro, Elec, PLC)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, group: e.target.value })} />
                 </>
               )}
               <div className="flex gap-3 justify-end pt-4">

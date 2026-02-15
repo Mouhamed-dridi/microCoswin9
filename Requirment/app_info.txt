@@ -1,0 +1,24 @@
+Name: MicroFix (also referred to as "MicroFix V10" in 
+package.json
+).
+Main purpose/domain: Industrial maintenance ticketing and management. The app is designed for tracking machine assets, reporting technical problems (mechanical, electrical, etc.), and managing maintenance workflows in an industrial setting.
+Core features:
+Login system: Role-based authentication (Manager, Operator, Maintenance) using username and password.
+Ticket management: Operators can create tickets (machine code, location, urgency, problem type); Managers can view lists, detailed ticket info, update status (Open, In Progress, Closed), and assign technicians.
+Machine/Asset tracking: Integrated into the ticket submission flow via machine/asset codes.
+User/Group management: UI specifically for managing user groups and accounts.
+Maintenance team: Dedicated user role with views for task assignment.
+Export features: Excel export functionality is present for provider/contact lists.
+Other visible features: CRM for provider/vendor contacts and a settings page.
+Tech stack summary:
+Frontend framework: React 19.2.4 (built with Vite).
+UI/Styling libraries: TailwindCSS and DaisyUI.
+Backend: Express 4.18.2.
+Data storage: JSON-based flat-file storage in the databases/ directory (server-side) and localStorage for session/preferences (client-side).
+Data persistence:
+Server-side: Data is read from and written to JSON files (tickets.json, users.json, providers.json) in the /databases folder using fs-extra.
+Client-side: Uses fetch API to communicate with the backend routes (/api/tickets, /api/login) and localStorage for local session caching (microfix_session).
+User roles / flows:
+Operator: Logs in to submit maintenance reports for specific machines; sees a success confirmation and a "submit another" option.
+Manager: Accesses a dashboard to see all tickets, filter them, view details, update their status, and manage users/providers.
+Maintenance: Role defined in the code for assignment, typically seeing tickets allocated to them (though specific technician mobile views are less detailed than the manager dashboard in visible files).

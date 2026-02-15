@@ -1,0 +1,20 @@
+# Node.js Version
+# Recommended: >=18.0.0
+
+# Frontend Dependencies
+react@19.2.4
+react-dom@19.2.4
+xlsx@0.18.5
+tailwindcss@latest
+daisyui@latest
+
+# Backend Dependencies
+express@4.18.2
+cors@2.8.5
+body-parser@1.20.2
+fs-extra@11.1.1
+nodemon@3.0.1
+
+# Installation Commands
+# To install all dependencies, run:
+# npm install
