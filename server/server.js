@@ -22,6 +22,7 @@ const USERS_FILE = path.join(DB_DIR, 'users.json');
 const PROVIDERS_FILE = path.join(DB_DIR, 'providers.json');
 const MACHINES_FILE = path.join(DB_DIR, 'machines.json');
 const MAINTENANCE_TEAM_FILE = path.join(DB_DIR, 'maintenanceTeam.json');
+const MAINTENANCE_REQUESTS_FILE = path.join(DB_DIR, 'maintenanceRequests.json');
 const GROUPS_FILE = path.join(DB_DIR, 'groups.json');
 
 // Safe JSON read helper
@@ -185,6 +186,39 @@ app.delete('/api/groups/:id', async (req, res) => {
     } else {
       res.status(404).json({ error: 'Not found' });
     }
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
+app.get('/api/maintenanceRequests', async (req, res) => {
+  try {
+    const data = await safeReadJson(MAINTENANCE_REQUESTS_FILE);
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
+app.post('/api/maintenanceRequests', async (req, res) => {
+  try {
+    const data = await safeReadJson(MAINTENANCE_REQUESTS_FILE);
+    const newRequest = { ...req.body, id: Date.now().toString() };
+    data.push(newRequest);
+    await fs.writeJson(MAINTENANCE_REQUESTS_FILE, data, { spaces: 2 });
+    res.status(201).json(newRequest);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
+app.delete('/api/maintenanceRequests/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    let data = await safeReadJson(MAINTENANCE_REQUESTS_FILE);
+    const filtered = data.filter(item => item.id !== id);
+    await fs.writeJson(MAINTENANCE_REQUESTS_FILE, filtered, { spaces: 2 });
+    res.json({ message: 'Deleted' });
   } catch (err) {
     res.status(500).json({ error: 'Failed' });
   }
