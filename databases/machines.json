@@ -1,9 +1,9 @@
 [
   {
     "id": "1771149403631",
-    "nameOrCode": "p47",
+    "nameOrCode": "P47",
     "provider": "haas",
-    "location": "zone 2",
+    "location": "zone 1",
     "responsible": "Technicien 2",
     "type": "Robot"
   },
