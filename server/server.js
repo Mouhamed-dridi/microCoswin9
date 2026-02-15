@@ -95,12 +95,36 @@ app.get('/api/machines', async (req, res) => {
 app.post('/api/machines', async (req, res) => {
   try {
     console.log('POST /api/machines called with data:', req.body);
-    const machines = req.body;
+    const machines = await fs.readJson(MACHINES_FILE);
+    const newMachine = req.body;
+    machines.push(newMachine);
     await fs.writeJson(MACHINES_FILE, machines, { spaces: 2 });
-    res.status(200).json(machines);
+    res.status(201).json(newMachine);
   } catch (err) {
     console.error('Error saving machines:', err);
     res.status(500).json({ error: 'Failed to save machines' });
+  }
+});
+
+app.put('/api/machines/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedData = req.body;
+    console.log(`PUT /api/machines/${id} called with data:`, updatedData);
+
+    let machines = await fs.readJson(MACHINES_FILE);
+    const index = machines.findIndex(m => m.id === id);
+
+    if (index !== -1) {
+      machines[index] = { ...machines[index], ...updatedData };
+      await fs.writeJson(MACHINES_FILE, machines, { spaces: 2 });
+      res.status(200).json(machines[index]);
+    } else {
+      res.status(404).json({ error: 'Machine not found' });
+    }
+  } catch (err) {
+    console.error('Error updating machine:', err);
+    res.status(500).json({ error: 'Failed to update machine' });
   }
 });
 

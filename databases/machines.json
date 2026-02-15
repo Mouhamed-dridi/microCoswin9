@@ -3,8 +3,26 @@
     "id": "1771149403631",
     "nameOrCode": "p47",
     "provider": "haas",
-    "location": "zone 3 ",
+    "location": "zone 2",
     "responsible": "Technicien 2",
     "type": "Robot"
-  }
+  },
+  {
+    "id": "1771152423126",
+    "nameOrCode": "D14",
+    "provider": "INDIAPRO",
+    "location": "ZONE 3",
+    "responsible": "Mohamed",
+    "type": "Electric"
+  },
+  [
+    {
+      "id": "1771149403631",
+      "nameOrCode": "p47",
+      "provider": "haas",
+      "location": "zone 3 ",
+      "responsible": "Technicien 2",
+      "type": "Robot"
+    }
+  ]
 ]

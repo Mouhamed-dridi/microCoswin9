@@ -17,6 +17,7 @@ const GroupesUtilisateursPage: React.FC = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<any>({});
+  const [editingMachineId, setEditingMachineId] = useState<string | null>(null);
 
   const loadAll = async () => {
     try {
@@ -52,8 +53,7 @@ const GroupesUtilisateursPage: React.FC = () => {
     if (activeTab === 'machines') {
       try {
         // Collect all field values into object
-        const newMachine = {
-          id: Date.now().toString(),
+        const machineData = {
           nameOrCode: formData.nameOrCode,
           provider: formData.provider,
           location: formData.location,
@@ -61,26 +61,23 @@ const GroupesUtilisateursPage: React.FC = () => {
           type: formData.type
         };
 
-        // Load current machines
-        const res = await fetch('/api/machines');
-        const currentMachines = res.ok ? await res.json() : [];
+        const url = editingMachineId ? `/api/machines/${editingMachineId}` : '/api/machines';
+        const method = editingMachineId ? 'PUT' : 'POST';
+        const bodyData = editingMachineId ? machineData : { ...machineData, id: Date.now().toString() };
 
-        // Add new machine to array
-        const updatedMachines = [...currentMachines, newMachine];
-
-        // POST full array to /api/machines
-        const saveRes = await fetch('/api/machines', {
-          method: 'POST',
+        const saveRes = await fetch(url, {
+          method: method,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatedMachines)
+          body: JSON.stringify(bodyData)
         });
 
         if (saveRes.ok) {
           setShowModal(false);
           setFormData({});
+          setEditingMachineId(null);
           loadAll(); // Refresh table
         } else {
-          throw new Error("POST failed");
+          throw new Error(`${method} failed`);
         }
       } catch (err) {
         console.error("Erreur de sauvegarde", err);
@@ -106,6 +103,18 @@ const GroupesUtilisateursPage: React.FC = () => {
     setter(updated);
     setShowModal(false);
     setFormData({});
+  };
+
+  const handleEditMachine = (machine: any) => {
+    setEditingMachineId(machine.id);
+    setFormData({
+      nameOrCode: machine.nameOrCode,
+      provider: machine.provider,
+      location: machine.location,
+      responsible: machine.responsible,
+      type: machine.type
+    });
+    setShowModal(true);
   };
 
   const deleteItem = async (key: string, id: string, items: any[], setter: (val: any[]) => void) => {
@@ -135,8 +144,8 @@ const GroupesUtilisateursPage: React.FC = () => {
   };
 
   const handleExportMachines = () => {
-    const headers = ['ID', 'Nom Machine', 'Fournisseur'];
-    const rows = machines.map(m => [m.id, m.machineName, m.vendor]);
+    const headers = ['Nom / Code', 'Fournisseur', 'Location', 'Responsable', 'Type'];
+    const rows = machines.map(m => [m.nameOrCode, m.provider, m.location, m.responsible, m.type]);
     const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Machines");
@@ -186,7 +195,17 @@ const GroupesUtilisateursPage: React.FC = () => {
               <table className="table table-zebra w-full text-sm">
                 <thead className="bg-[#F9FAFB] text-[#667085] text-xs uppercase">
                   <tr>
-                    <th className="px-6 py-4">Nom / Libellé</th>
+                    {activeTab === 'machines' ? (
+                      <>
+                        <th className="px-6 py-4">Nom / Code</th>
+                        <th className="px-6 py-4">Provider</th>
+                        <th className="px-6 py-4">Location</th>
+                        <th className="px-6 py-4">Responsible</th>
+                        <th className="px-6 py-4">Type</th>
+                      </>
+                    ) : (
+                      <th className="px-6 py-4">Nom / Libellé</th>
+                    )}
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -206,17 +225,20 @@ const GroupesUtilisateursPage: React.FC = () => {
                       <td className="px-6 py-4 text-right"><button onClick={() => deleteItem(GROUPS_KEY, g.id, groups, setGroups)} className="text-red-600 font-bold">Supprimer</button></td>
                     </tr>
                   ))}
-                  {activeTab === 'machines' && machines.map(m => (
-                    <tr key={m.id}>
-                      <td className="px-6 py-4">
-                        <div className="font-bold">{m.nameOrCode}</div>
-                        <div className="text-xs text-[#667085]">{m.provider} - {m.type}</div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button onClick={() => deleteItem(MACHINES_KEY, m.id, machines, setMachines)} className="text-red-600 font-bold">Supprimer</button>
-                      </td>
-                    </tr>
-                  ))}
+                  {activeTab === 'machines' && machines
+                    .filter(m => m && m.id && m.nameOrCode)
+                    .map(m => (
+                      <tr key={m.id}>
+                        <td className="px-6 py-4 font-bold text-[#007a8c] cursor-pointer hover:underline" onClick={() => handleEditMachine(m)}>{m.nameOrCode}</td>
+                        <td className="px-6 py-4">{m.provider}</td>
+                        <td className="px-6 py-4">{m.location}</td>
+                        <td className="px-6 py-4">{m.responsible}</td>
+                        <td className="px-6 py-4">{m.type}</td>
+                        <td className="px-6 py-4 text-right">
+                          <button onClick={() => deleteItem(MACHINES_KEY, m.id, machines, setMachines)} className="text-red-600 font-bold">Supprimer</button>
+                        </td>
+                      </tr>
+                    ))}
                   {activeTab === 'maintenance' && maintenanceTeam.map(t => (
                     <tr key={t.id}>
                       <td className="px-6 py-4">
@@ -238,7 +260,7 @@ const GroupesUtilisateursPage: React.FC = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-[#EAECF0]">
             <div className="p-6 border-b border-[#EAECF0] bg-[#F9FAFB]">
-              <h3 className="text-lg font-bold">{activeTab === 'machines' ? "Ajouter un élément (machines)" : `Ajouter un élément (${activeTab})`}</h3>
+              <h3 className="text-lg font-bold">{editingMachineId ? "Modifier la machine" : activeTab === 'machines' ? "Ajouter un élément (machines)" : `Ajouter un élément (${activeTab})`}</h3>
             </div>
             <form onSubmit={handleSaveItem} className="p-6 space-y-4">
               {activeTab === 'users' && (
@@ -261,19 +283,19 @@ const GroupesUtilisateursPage: React.FC = () => {
                 <>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Nom ou Code *</label>
-                    <input required placeholder="Nom de la machine ou code (ex: G33)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, nameOrCode: e.target.value })} />
+                    <input required placeholder="Nom de la machine ou code (ex: G33)" className="input input-bordered w-full text-sm h-11" value={formData.nameOrCode || ''} onChange={e => setFormData({ ...formData, nameOrCode: e.target.value })} />
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Fournisseur *</label>
-                    <input required placeholder="Fournisseur / Fabricant (ex: MicroIndust)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, provider: e.target.value })} />
+                    <input required placeholder="Fournisseur / Fabricant (ex: MicroIndust)" className="input input-bordered w-full text-sm h-11" value={formData.provider || ''} onChange={e => setFormData({ ...formData, provider: e.target.value })} />
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Location *</label>
-                    <input required placeholder="Zone / Emplacement (ex: Zone 2)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, location: e.target.value })} />
+                    <input required placeholder="Zone / Emplacement (ex: Zone 2)" className="input input-bordered w-full text-sm h-11" value={formData.location || ''} onChange={e => setFormData({ ...formData, location: e.target.value })} />
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Responsable Maintenance Team *</label>
-                    <select required className="select select-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, responsible: e.target.value })}>
+                    <select required className="select select-bordered w-full text-sm h-11" value={formData.responsible || ''} onChange={e => setFormData({ ...formData, responsible: e.target.value })}>
                       <option value="">Choisir un responsable</option>
                       {maintenanceTeam && maintenanceTeam.length > 0 ? (
                         maintenanceTeam.map((t: any) => (
@@ -291,7 +313,7 @@ const GroupesUtilisateursPage: React.FC = () => {
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Type *</label>
-                    <select required className="select select-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, type: e.target.value })}>
+                    <select required className="select select-bordered w-full text-sm h-11" value={formData.type || ''} onChange={e => setFormData({ ...formData, type: e.target.value })}>
                       <option value="Hydro">Hydro</option>
                       <option value="Electric">Électrique</option>
                       <option value="Robot">Robot</option>
@@ -309,8 +331,8 @@ const GroupesUtilisateursPage: React.FC = () => {
                 </>
               )}
               <div className="flex gap-3 justify-end pt-4">
-                <button type="button" onClick={() => setShowModal(false)} className="btn btn-ghost font-bold">Annuler</button>
-                <button type="submit" className="btn bg-[#007a8c] text-white font-bold">Enregistrer</button>
+                <button type="button" onClick={() => { setShowModal(false); setFormData({}); setEditingMachineId(null); }} className="btn btn-ghost font-bold">Annuler</button>
+                <button type="submit" className="btn bg-[#007a8c] text-white font-bold">{editingMachineId ? "Mettre à jour" : "Enregistrer"}</button>
               </div>
             </form>
           </div>
