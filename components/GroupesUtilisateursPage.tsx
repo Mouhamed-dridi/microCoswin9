@@ -18,14 +18,20 @@ const GroupesUtilisateursPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<any>({});
   const [editingMachineId, setEditingMachineId] = useState<string | null>(null);
+  const [editingMaintenanceId, setEditingMaintenanceId] = useState<string | null>(null);
 
   const loadAll = async () => {
     try {
       // LocalStorage for users and groups for now (as in original)
       const u = localStorage.getItem(USERS_KEY);
       setUsers(u ? JSON.parse(u) : []);
-      const g = localStorage.getItem(GROUPS_KEY);
-      setGroups(g ? JSON.parse(g) : []);
+
+      // Fetch groups from backend
+      const resG = await fetch('/api/groups');
+      if (resG.ok) {
+        const gData = await resG.json();
+        setGroups(gData);
+      }
 
       // Fetch machines from backend
       const resM = await fetch('/api/machines');
@@ -88,26 +94,31 @@ const GroupesUtilisateursPage: React.FC = () => {
 
     if (activeTab === 'maintenance') {
       try {
-        const newTechnician = {
-          id: Date.now().toString(),
+        const technicianData = {
           name: formData.name,
           zone: formData.zone,
           specialite: formData.specialite,
-          telephone: formData.telephone
+          telephone: formData.telephone,
+          groupe: formData.groupe
         };
 
-        const saveRes = await fetch('/api/maintenanceTeam', {
-          method: 'POST',
+        const url = editingMaintenanceId ? `/api/maintenanceTeam/${editingMaintenanceId}` : '/api/maintenanceTeam';
+        const method = editingMaintenanceId ? 'PUT' : 'POST';
+        const bodyData = editingMaintenanceId ? technicianData : { ...technicianData, id: Date.now().toString() };
+
+        const saveRes = await fetch(url, {
+          method: method,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newTechnician)
+          body: JSON.stringify(bodyData)
         });
 
         if (saveRes.ok) {
           setShowModal(false);
           setFormData({});
+          setEditingMaintenanceId(null);
           loadAll();
         } else {
-          throw new Error("POST failed");
+          throw new Error(`${method} failed`);
         }
       } catch (err) {
         console.error("Erreur de sauvegarde", err);
@@ -147,6 +158,18 @@ const GroupesUtilisateursPage: React.FC = () => {
     setShowModal(true);
   };
 
+  const handleEditMaintenance = (member: any) => {
+    setEditingMaintenanceId(member.id);
+    setFormData({
+      name: member.name,
+      zone: member.zone,
+      specialite: member.specialite,
+      telephone: member.telephone,
+      groupe: member.groupe
+    });
+    setShowModal(true);
+  };
+
   const deleteItem = async (key: string, id: string, items: any[], setter: (val: any[]) => void) => {
     if (confirm('Supprimer cet élément ?')) {
       const updated = items.filter(i => i.id !== id);
@@ -157,6 +180,19 @@ const GroupesUtilisateursPage: React.FC = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updated)
+          });
+          if (res.ok) {
+            setter(updated);
+          } else {
+            alert("Erreur lors de la suppression");
+          }
+        } catch (err) {
+          console.error("Delete failed", err);
+        }
+      } else if (key === MAINTENANCE_TEAM_KEY) {
+        try {
+          const res = await fetch(`/api/maintenanceTeam/${id}`, {
+            method: 'DELETE'
           });
           if (res.ok) {
             setter(updated);
@@ -233,6 +269,14 @@ const GroupesUtilisateursPage: React.FC = () => {
                         <th className="px-6 py-4">Responsible</th>
                         <th className="px-6 py-4">Type</th>
                       </>
+                    ) : activeTab === 'maintenance' ? (
+                      <>
+                        <th className="px-6 py-4">Nom</th>
+                        <th className="px-6 py-4">ID</th>
+                        <th className="px-6 py-4">Zone</th>
+                        <th className="px-6 py-4">Spécialité</th>
+                        <th className="px-6 py-4">Téléphone</th>
+                      </>
                     ) : (
                       <th className="px-6 py-4">Nom / Libellé</th>
                     )}
@@ -269,15 +313,20 @@ const GroupesUtilisateursPage: React.FC = () => {
                         </td>
                       </tr>
                     ))}
-                  {activeTab === 'maintenance' && maintenanceTeam.map(t => (
-                    <tr key={t.id}>
-                      <td className="px-6 py-4">
-                        <div className="font-bold">{t.name}</div>
-                        <div className="text-xs text-[#667085]">{t.specialite} - {t.zone} - {t.telephone}</div>
-                      </td>
-                      <td className="px-6 py-4 text-right"><button onClick={() => deleteItem(MAINTENANCE_TEAM_KEY, t.id, maintenanceTeam, setMaintenanceTeam)} className="text-red-600 font-bold">Supprimer</button></td>
-                    </tr>
-                  ))}
+                  {activeTab === 'maintenance' && maintenanceTeam
+                    .filter(t => t && t.id && t.name)
+                    .map(t => (
+                      <tr key={t.id}>
+                        <td className="px-6 py-4 font-bold text-[#007a8c] cursor-pointer hover:underline" onClick={() => handleEditMaintenance(t)}>{t.name}</td>
+                        <td className="px-6 py-4 text-xs font-mono">{t.id}</td>
+                        <td className="px-6 py-4">{t.zone}</td>
+                        <td className="px-6 py-4">{t.specialite}</td>
+                        <td className="px-6 py-4">{t.telephone}</td>
+                        <td className="px-6 py-4 text-right">
+                          <button onClick={() => deleteItem(MAINTENANCE_TEAM_KEY, t.id, maintenanceTeam, setMaintenanceTeam)} className="text-red-600 font-bold hover:underline">Supprimer</button>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -290,7 +339,12 @@ const GroupesUtilisateursPage: React.FC = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-[#EAECF0]">
             <div className="p-6 border-b border-[#EAECF0] bg-[#F9FAFB]">
-              <h3 className="text-lg font-bold">{editingMachineId ? "Modifier la machine" : activeTab === 'machines' ? "Ajouter un élément (machines)" : `Ajouter un élément (${activeTab})`}</h3>
+              <h3 className="text-lg font-bold">
+                {editingMachineId ? "Modifier la machine" :
+                  editingMaintenanceId ? "Modifier le technicien" :
+                    activeTab === 'machines' ? "Ajouter un élément (machines)" :
+                      `Ajouter un élément (${activeTab})`}
+              </h3>
             </div>
             <form onSubmit={handleSaveItem} className="p-6 space-y-4">
               {activeTab === 'users' && (
@@ -357,15 +411,15 @@ const GroupesUtilisateursPage: React.FC = () => {
                 <>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Nom complet *</label>
-                    <input required placeholder="Nom complet" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                    <input required placeholder="Nom complet" className="input input-bordered w-full text-sm h-11" value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Zone *</label>
-                    <input required placeholder="Zone (ex: Zone A)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, zone: e.target.value })} />
+                    <input required placeholder="Zone (ex: Zone A)" className="input input-bordered w-full text-sm h-11" value={formData.zone || ''} onChange={e => setFormData({ ...formData, zone: e.target.value })} />
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Spécialité *</label>
-                    <select required className="select select-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, specialite: e.target.value })}>
+                    <select required className="select select-bordered w-full text-sm h-11" value={formData.specialite || ''} onChange={e => setFormData({ ...formData, specialite: e.target.value })}>
                       <option value="">Sélectionner Spécialité</option>
                       <option value="Hydro">Hydro</option>
                       <option value="Elektronic">Elektronic</option>
@@ -375,13 +429,22 @@ const GroupesUtilisateursPage: React.FC = () => {
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Téléphone (WhatsApp) *</label>
-                    <input required placeholder="Numéro de téléphone" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, telephone: e.target.value })} />
+                    <input required placeholder="Numéro de téléphone" className="input input-bordered w-full text-sm h-11" value={formData.telephone || ''} onChange={e => setFormData({ ...formData, telephone: e.target.value })} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">GROUPE *</label>
+                    <select required className="select select-bordered w-full text-sm h-11" value={formData.groupe || ''} onChange={e => setFormData({ ...formData, groupe: e.target.value })}>
+                      <option value="">Sélectionner Groupe</option>
+                      {groups && groups.map((g: any) => (
+                        <option key={g.id} value={g.name}>{g.name}</option>
+                      ))}
+                    </select>
                   </div>
                 </>
               )}
               <div className="flex gap-3 justify-end pt-4">
-                <button type="button" onClick={() => { setShowModal(false); setFormData({}); setEditingMachineId(null); }} className="btn btn-ghost font-bold">Annuler</button>
-                <button type="submit" className="btn bg-[#007a8c] text-white font-bold">{editingMachineId ? "Mettre à jour" : "Enregistrer"}</button>
+                <button type="button" onClick={() => { setShowModal(false); setFormData({}); setEditingMachineId(null); setEditingMaintenanceId(null); }} className="btn btn-ghost font-bold">Annuler</button>
+                <button type="submit" className="btn bg-[#007a8c] text-white font-bold">{(editingMachineId || editingMaintenanceId) ? "Mettre à jour" : "Enregistrer"}</button>
               </div>
             </form>
           </div>

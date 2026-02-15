@@ -22,6 +22,7 @@ const USERS_FILE = path.join(DB_DIR, 'users.json');
 const PROVIDERS_FILE = path.join(DB_DIR, 'providers.json');
 const MACHINES_FILE = path.join(DB_DIR, 'machines.json');
 const MAINTENANCE_TEAM_FILE = path.join(DB_DIR, 'maintenanceTeam.json');
+const GROUPS_FILE = path.join(DB_DIR, 'groups.json');
 
 // Safe JSON read helper
 const safeReadJson = async (filePath, defaultValue = []) => {
@@ -152,6 +153,15 @@ app.put('/api/machines/:id', async (req, res) => {
   }
 });
 
+app.get('/api/groups', async (req, res) => {
+  try {
+    const groups = await safeReadJson(GROUPS_FILE);
+    res.json(groups);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed' });
+  }
+});
+
 app.get('/api/maintenanceTeam', async (req, res) => {
   try {
     console.log('GET /api/maintenanceTeam called');
@@ -174,6 +184,48 @@ app.post('/api/maintenanceTeam', async (req, res) => {
   } catch (err) {
     console.error('Error saving maintenanceTeam:', err);
     res.status(500).json({ error: 'Failed to save maintenance team member' });
+  }
+});
+
+app.put('/api/maintenanceTeam/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedData = req.body;
+    console.log(`PUT /api/maintenanceTeam/${id} called`);
+
+    let team = await safeReadJson(MAINTENANCE_TEAM_FILE);
+    const index = team.findIndex(t => t.id === id);
+
+    if (index !== -1) {
+      team[index] = { ...team[index], ...updatedData };
+      await fs.writeJson(MAINTENANCE_TEAM_FILE, team, { spaces: 2 });
+      res.status(200).json(team[index]);
+    } else {
+      res.status(404).json({ error: 'Technician not found' });
+    }
+  } catch (err) {
+    console.error('Error updating maintenanceTeam:', err);
+    res.status(500).json({ error: 'Failed to update maintenance team member' });
+  }
+});
+
+app.delete('/api/maintenanceTeam/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`DELETE /api/maintenanceTeam/${id} called`);
+
+    let team = await safeReadJson(MAINTENANCE_TEAM_FILE);
+    const filteredTeam = team.filter(t => t.id !== id);
+
+    if (team.length !== filteredTeam.length) {
+      await fs.writeJson(MAINTENANCE_TEAM_FILE, filteredTeam, { spaces: 2 });
+      res.status(200).json({ message: 'Deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'Technician not found' });
+    }
+  } catch (err) {
+    console.error('Error deleting from maintenanceTeam:', err);
+    res.status(500).json({ error: 'Failed to delete maintenance team member' });
   }
 });
 
