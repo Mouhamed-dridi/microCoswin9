@@ -86,6 +86,36 @@ const GroupesUtilisateursPage: React.FC = () => {
       return;
     }
 
+    if (activeTab === 'maintenance') {
+      try {
+        const newTechnician = {
+          id: Date.now().toString(),
+          name: formData.name,
+          zone: formData.zone,
+          specialite: formData.specialite,
+          telephone: formData.telephone
+        };
+
+        const saveRes = await fetch('/api/maintenanceTeam', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newTechnician)
+        });
+
+        if (saveRes.ok) {
+          setShowModal(false);
+          setFormData({});
+          loadAll();
+        } else {
+          throw new Error("POST failed");
+        }
+      } catch (err) {
+        console.error("Erreur de sauvegarde", err);
+        alert("Erreur de sauvegarde");
+      }
+      return;
+    }
+
     // Default logic for other tabs (using localStorage as before)
     const id = Date.now().toString();
     const newItem = { ...formData, id, status: formData.status || 'Actif' };
@@ -242,8 +272,8 @@ const GroupesUtilisateursPage: React.FC = () => {
                   {activeTab === 'maintenance' && maintenanceTeam.map(t => (
                     <tr key={t.id}>
                       <td className="px-6 py-4">
-                        <div className="font-bold">{t.fullName}</div>
-                        <div className="text-xs text-[#667085]">{t.group} - {t.tel}</div>
+                        <div className="font-bold">{t.name}</div>
+                        <div className="text-xs text-[#667085]">{t.specialite} - {t.zone} - {t.telephone}</div>
                       </td>
                       <td className="px-6 py-4 text-right"><button onClick={() => deleteItem(MAINTENANCE_TEAM_KEY, t.id, maintenanceTeam, setMaintenanceTeam)} className="text-red-600 font-bold">Supprimer</button></td>
                     </tr>
@@ -325,9 +355,28 @@ const GroupesUtilisateursPage: React.FC = () => {
               )}
               {activeTab === 'maintenance' && (
                 <>
-                  <input required placeholder="Nom complet" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, fullName: e.target.value })} />
-                  <input required placeholder="Téléphone" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, tel: e.target.value })} />
-                  <input required placeholder="Spécialité (Hydro, Elec, PLC)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, group: e.target.value })} />
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Nom complet *</label>
+                    <input required placeholder="Nom complet" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Zone *</label>
+                    <input required placeholder="Zone (ex: Zone A)" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, zone: e.target.value })} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Spécialité *</label>
+                    <select required className="select select-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, specialite: e.target.value })}>
+                      <option value="">Sélectionner Spécialité</option>
+                      <option value="Hydro">Hydro</option>
+                      <option value="Elektronic">Elektronic</option>
+                      <option value="Development">Development</option>
+                      <option value="Mecanique">Mecanique</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Téléphone (WhatsApp) *</label>
+                    <input required placeholder="Numéro de téléphone" className="input input-bordered w-full text-sm h-11" onChange={e => setFormData({ ...formData, telephone: e.target.value })} />
+                  </div>
                 </>
               )}
               <div className="flex gap-3 justify-end pt-4">

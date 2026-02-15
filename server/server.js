@@ -23,14 +23,38 @@ const PROVIDERS_FILE = path.join(DB_DIR, 'providers.json');
 const MACHINES_FILE = path.join(DB_DIR, 'machines.json');
 const MAINTENANCE_TEAM_FILE = path.join(DB_DIR, 'maintenanceTeam.json');
 
+// Safe JSON read helper
+const safeReadJson = async (filePath, defaultValue = []) => {
+  try {
+    if (!(await fs.pathExists(filePath))) return defaultValue;
+    const stats = await fs.stat(filePath);
+    if (stats.size === 0) return defaultValue;
+    return await fs.readJson(filePath);
+  } catch (err) {
+    console.error(`Error reading ${filePath}:`, err);
+    return defaultValue;
+  }
+};
+
 // Ensure database files exist
 const initDb = async () => {
   await fs.ensureDir(DB_DIR);
-  if (!(await fs.pathExists(TICKETS_FILE))) await fs.writeJson(TICKETS_FILE, []);
-  if (!(await fs.pathExists(USERS_FILE))) await fs.writeJson(USERS_FILE, [{ username: 'admin', password: 'password', role: 'manager' }]);
-  if (!(await fs.pathExists(PROVIDERS_FILE))) await fs.writeJson(PROVIDERS_FILE, []);
-  if (!(await fs.pathExists(MACHINES_FILE))) await fs.writeJson(MACHINES_FILE, []);
-  if (!(await fs.pathExists(MAINTENANCE_TEAM_FILE))) await fs.writeJson(MAINTENANCE_TEAM_FILE, []);
+  const files = [
+    { path: TICKETS_FILE, default: [] },
+    { path: USERS_FILE, default: [{ username: 'admin', password: 'password', role: 'manager' }] },
+    { path: PROVIDERS_FILE, default: [] },
+    { path: MACHINES_FILE, default: [] },
+    { path: MAINTENANCE_TEAM_FILE, default: [] },
+    { path: path.join(DB_DIR, 'session.json'), default: {} },
+    { path: path.join(DB_DIR, 'settings.json'), default: {} },
+    { path: path.join(DB_DIR, 'groups.json'), default: [] },
+  ];
+
+  for (const file of files) {
+    if (!(await fs.pathExists(file.path)) || (await fs.stat(file.path)).size === 0) {
+      await fs.writeJson(file.path, file.default, { spaces: 2 });
+    }
+  }
 };
 
 initDb();
@@ -38,7 +62,7 @@ initDb();
 // Routes
 app.get('/api/tickets', async (req, res) => {
   try {
-    const tickets = await fs.readJson(TICKETS_FILE);
+    const tickets = await safeReadJson(TICKETS_FILE);
     res.json(tickets);
   } catch (err) {
     res.status(500).json({ error: 'Failed to read tickets' });
@@ -47,7 +71,7 @@ app.get('/api/tickets', async (req, res) => {
 
 app.post('/api/tickets', async (req, res) => {
   try {
-    const tickets = await fs.readJson(TICKETS_FILE);
+    const tickets = await safeReadJson(TICKETS_FILE);
     const newTicket = req.body;
     tickets.push(newTicket);
     await fs.writeJson(TICKETS_FILE, tickets, { spaces: 2 });
@@ -60,7 +84,7 @@ app.post('/api/tickets', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    const users = await fs.readJson(USERS_FILE);
+    const users = await safeReadJson(USERS_FILE);
     const user = users.find(u => u.username === username && u.password === password);
     if (user) {
       res.json({ success: true, user: { username: user.username, role: user.role } });
@@ -74,7 +98,7 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/providers', async (req, res) => {
   try {
-    const providers = await fs.readJson(PROVIDERS_FILE);
+    const providers = await safeReadJson(PROVIDERS_FILE);
     res.json(providers);
   } catch (err) {
     res.status(500).json({ error: 'Failed' });
@@ -84,7 +108,7 @@ app.get('/api/providers', async (req, res) => {
 app.get('/api/machines', async (req, res) => {
   try {
     console.log('GET /api/machines called');
-    const machines = await fs.readJson(MACHINES_FILE);
+    const machines = await safeReadJson(MACHINES_FILE);
     res.json(machines);
   } catch (err) {
     console.error('Error reading machines:', err);
@@ -95,7 +119,7 @@ app.get('/api/machines', async (req, res) => {
 app.post('/api/machines', async (req, res) => {
   try {
     console.log('POST /api/machines called with data:', req.body);
-    const machines = await fs.readJson(MACHINES_FILE);
+    const machines = await safeReadJson(MACHINES_FILE);
     const newMachine = req.body;
     machines.push(newMachine);
     await fs.writeJson(MACHINES_FILE, machines, { spaces: 2 });
@@ -131,7 +155,7 @@ app.put('/api/machines/:id', async (req, res) => {
 app.get('/api/maintenanceTeam', async (req, res) => {
   try {
     console.log('GET /api/maintenanceTeam called');
-    const team = await fs.readJson(MAINTENANCE_TEAM_FILE);
+    const team = await safeReadJson(MAINTENANCE_TEAM_FILE);
     res.json(team);
   } catch (err) {
     console.error('Error reading maintenanceTeam:', err);
@@ -142,12 +166,14 @@ app.get('/api/maintenanceTeam', async (req, res) => {
 app.post('/api/maintenanceTeam', async (req, res) => {
   try {
     console.log('POST /api/maintenanceTeam called');
-    const team = req.body;
+    const team = await safeReadJson(MAINTENANCE_TEAM_FILE);
+    const newTechnician = req.body;
+    team.push(newTechnician);
     await fs.writeJson(MAINTENANCE_TEAM_FILE, team, { spaces: 2 });
-    res.status(200).json(team);
+    res.status(201).json(newTechnician);
   } catch (err) {
     console.error('Error saving maintenanceTeam:', err);
-    res.status(500).json({ error: 'Failed' });
+    res.status(500).json({ error: 'Failed to save maintenance team member' });
   }
 });
 
