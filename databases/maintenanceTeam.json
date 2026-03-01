@@ -12,5 +12,21 @@
         "zone": "bouzidi",
         "specialite": "Development",
         "telephone": "53 995 231"
+    },
+    {
+        "name": "ahmed salimi",
+        "zone": "zone 2",
+        "specialite": "Development",
+        "telephone": "74 102 365",
+        "groupe": "day-shift",
+        "id": "1771183229032"
+    },
+    {
+        "name": "samya",
+        "zone": "zone 2",
+        "specialite": "Elektronic",
+        "telephone": "29 763 845",
+        "groupe": "day-shift",
+        "id": "1771183252157"
     }
 ]
