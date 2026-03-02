@@ -63,7 +63,7 @@ const GroupesUtilisateursPage: React.FC = () => {
           nameOrCode: formData.nameOrCode,
           provider: formData.provider,
           location: formData.location,
-          responsible: formData.responsible,
+          responsible: '', // Field removed by user request
           type: formData.type
         };
 
@@ -178,7 +178,6 @@ const GroupesUtilisateursPage: React.FC = () => {
       nameOrCode: machine.nameOrCode,
       provider: machine.provider,
       location: machine.location,
-      responsible: machine.responsible,
       type: machine.type
     });
     setShowModal(true);
@@ -415,24 +414,6 @@ const GroupesUtilisateursPage: React.FC = () => {
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Location *</label>
                     <input required placeholder="Zone / Emplacement (ex: Zone 2)" className="input input-bordered w-full text-sm h-11" value={formData.location || ''} onChange={e => setFormData({ ...formData, location: e.target.value })} />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Responsable Maintenance Team *</label>
-                    <select required className="select select-bordered w-full text-sm h-11" value={formData.responsible || ''} onChange={e => setFormData({ ...formData, responsible: e.target.value })}>
-                      <option value="">Choisir un responsable</option>
-                      {maintenanceTeam && maintenanceTeam.length > 0 ? (
-                        maintenanceTeam.map((t: any) => (
-                          <option key={t.id} value={t.fullName}>{t.fullName}</option>
-                        ))
-                      ) : (
-                        <>
-                          <option value="Technicien 1">Technicien 1</option>
-                          <option value="Technicien 2">Technicien 2</option>
-                          <option value="Ahmed">Ahmed</option>
-                          <option value="Mohamed">Mohamed</option>
-                        </>
-                      )}
-                    </select>
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-500 uppercase">Type *</label>

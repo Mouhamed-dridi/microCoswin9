@@ -24,5 +24,28 @@
       "responsible": "Technicien 2",
       "type": "Robot"
     }
-  ]
+  ],
+  {
+    "nameOrCode": "G44",
+    "provider": "KOKA BOT ",
+    "location": "ZONE 3",
+    "responsible": "",
+    "id": "1772471776672"
+  },
+  {
+    "nameOrCode": "P02",
+    "provider": "MIRAKI",
+    "location": "ZONE 1",
+    "responsible": "",
+    "type": "Laser",
+    "id": "1772484020111"
+  },
+  {
+    "nameOrCode": "GREEN",
+    "provider": "GREEN FILTER",
+    "location": "ZONE D11",
+    "responsible": "",
+    "type": "Laser",
+    "id": "1772484043964"
+  }
 ]

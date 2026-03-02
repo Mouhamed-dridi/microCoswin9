@@ -28,5 +28,29 @@
         "telephone": "29 763 845",
         "groupe": "day-shift",
         "id": "1771183252157"
+    },
+    {
+        "name": "AHMED ",
+        "zone": "ZONE 5",
+        "specialite": "Development",
+        "telephone": "785623654",
+        "groupe": "day-shift",
+        "id": "1772470675151"
+    },
+    {
+        "name": "MALEK",
+        "zone": "MAHJOUB",
+        "specialite": "Elektronic",
+        "telephone": "78771325",
+        "groupe": "nighet-shift",
+        "id": "1772470695974"
+    },
+    {
+        "name": "MAHJOUB",
+        "zone": "ZONE 1",
+        "specialite": "Mecanique",
+        "telephone": "789963145",
+        "groupe": "day-shift",
+        "id": "1772470765913"
     }
 ]
