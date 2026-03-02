@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MicoFix - My Tasks</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body style="background-color: #FAFAFA;">
+    <div class="header-curved">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="logo">Mico<span>Fix.</span></div>
+            <div style="display: flex; gap: 12px;">
+
+                <div class="filter-badge" id="notifBtn"
+                    style="background: rgba(255,255,255,0.2); color: white; padding: 10px; cursor: pointer;">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+            </div>
+        </div>
+        <h1 class="title" style="margin-top: 20px;">My tasks</h1>
+    </div>
+
+    <div class="filter-scroll" style="margin-top: 60px;">
+        <div class="filter-badge active">All tasks</div>
+        <div class="filter-badge">To do</div>
+        <div class="filter-badge">In progress</div>
+        <div class="filter-badge">Done</div>
+    </div>
+
+    <div class="section-title" style="margin-top: 20px;">
+        <span><i class="fa-solid fa-headset" style="color: var(--primary);"></i> Operator Requests</span>
+        <span style="font-size: 12px; color: var(--primary);">View All</span>
+    </div>
+
+    <!-- Mini horizontally scrollable operator requests -->
+    <div style="display: flex; gap: 16px; overflow-x: auto; padding: 0 24px 20px 24px; scrollbar-width: none;"
+        id="operatorRequests">
+        <!-- Will be populated by JS -->
+    </div>
+
+    <div class="section-title">
+        <span><i class="fa-solid fa-list-check"></i> My Assigned Tasks</span>
+        <span style="font-size: 12px; color: var(--text-muted);">Sort by <i class="fa-solid fa-chevron-down"></i></span>
+    </div>
+
+    <div class="task-list" id="taskList">
+        <!-- Tasks will be loaded here -->
+        <div class="footer-text">Loading your tasks...</div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div id="notifModal"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1001; align-items: center; justify-content: center; padding: 24px;">
+        <div class="task-card" style="width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-weight: 800;">Notifications</h3>
+                <i id="closeNotif" class="fa-solid fa-xmark" style="cursor: pointer; color: var(--text-muted);"></i>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;" id="notifList">
+                <div style="padding: 12px; border-bottom: 1px solid #EEE;">
+                    <p style="font-weight: 600; font-size: 14px;">Urgent Request</p>
+                    <p style="font-size: 12px; color: var(--text-muted);">Pump failure reported by Operator Ahmed</p>
+                    <small style="color: #CCC;">Just now</small>
+                </div>
+                <div style="padding: 12px; border-bottom: 1px solid #EEE;">
+                    <p style="font-weight: 600; font-size: 14px;">System Update</p>
+                    <p style="font-size: 12px; color: var(--text-muted);">MicoFix v1.0.1 is now live</p>
+                    <small style="color: #CCC;">Yesterday</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item active"><i class="fa-solid fa-grip"></i></a>
+        <a href="scheduling.html" class="nav-item"><i class="fa-solid fa-calendar-days"></i></a>
+        <a href="settings.html" class="nav-item"><i class="fa-solid fa-gear"></i></a>
+        <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i></a>
+    </nav>
+
+    <script src="settingsManager.js"></script>
+    <script src="mobileappAuth.js"></script>
+    <script type="module">
+        import DataManager from './dataManager.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = DataManager.getUserProfile();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Notification handling
+            const bellIcon = document.getElementById('bellIcon');
+            const notifModal = document.getElementById('notifModal');
+            const closeNotif = document.getElementById('closeNotif');
+
+            bellIcon.onclick = (e) => { e.preventDefault(); notifModal.style.display = 'flex'; };
+            closeNotif.onclick = () => notifModal.style.display = 'none';
+            notifModal.onclick = (e) => { if (e.target === notifModal) notifModal.style.display = 'none'; };
+
+            let allTickets = await DataManager.getDashboardData(); // Fetch all tickets as requested
+            const taskList = document.getElementById('taskList');
+            const operatorList = document.getElementById('operatorRequests');
+            const sortSelect = document.getElementById('sortSelect');
+
+            function renderTickets(tickets) {
+                if (tickets.length === 0) {
+                    taskList.innerHTML = '<div class="footer-text">No tickets assigned to you yet.</div>';
+                    return;
+                }
+
+                taskList.innerHTML = tickets.map(ticket => `
+                    <div class="task-card">
+                        <span class="task-tag in-progress">In progress</span>
+                        <h3 class="task-title">Maintenance Service #${ticket.id.substring(ticket.id.length - 4)}</h3>
+                        <div class="task-meta">
+                            <div><i class="fa-solid fa-robot"></i> ${ticket.machine.nameOrCode}</div>
+                            <div><i class="fa-solid fa-location-dot"></i> ${ticket.machine.location}</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${Math.floor(Math.random() * 60) + 20}%"></div>
+                        </div>
+                        <div style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">
+                            <i class="fa-regular fa-calendar"></i> ${ticket.date} &nbsp; <i class="fa-regular fa-clock"></i> ${ticket.time}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            function sortAndRender() {
+                const sortBy = sortSelect.value;
+                const sorted = [...allTickets].sort((a, b) => {
+                    // Assuming date and time are in a format that can be parsed by Date constructor
+                    // e.g., "YYYY-MM-DD" and "HH:MM"
+                    const timeA = new Date(`${a.date}T${a.time}`).getTime();
+                    const timeB = new Date(`${b.date}T${b.time}`).getTime();
+                    return sortBy === 'newest' ? timeB - timeA : timeA - timeB;
+                });
+                renderTickets(sorted);
+            }
+
+            sortSelect.onchange = sortAndRender;
+
+            // Initial render
+            sortAndRender();
+
+            // Populate Operator Requests (using the same pool for now as requested)
+            operatorList.innerHTML = allTickets.length > 0 ? allTickets.slice(0, 4).map(ticket => `
+                <div class="task-card" style="min-width: 250px; padding: 16px; margin-bottom: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <span class="task-tag" style="background: #FFF0E6; color: #FF8A3D;">Urgent</span>
+                        <span style="font-size: 10px; color: #CCC;">#${ticket.id.substring(ticket.id.length - 4)}</span>
+                    </div>
+                    <h4 style="margin: 8px 0; font-size: 14px;">Service Request - ${ticket.machine.nameOrCode}</h4>
+                    <p style="font-size: 12px; color: var(--text-muted);">
+                        <i class="fa-solid fa-location-dot"></i> ${ticket.machine.location} &nbsp;
+                        <i class="fa-solid fa-clock"></i> ${ticket.time}
+                    </p>
+                    <div style="margin-top: 10px; font-size: 11px; display: flex; align-items: center; gap: 6px;">
+                        <img src="https://i.pravatar.cc/150?u=${ticket.id}" style="width: 20px; height: 20px; border-radius: 50%;">
+                        <span style="color: var(--text-muted);">Requested by Operator</span>
+                    </div>
+                </div>
+            `).join('') : '<div class="footer-text">No pending requests</div>';
+        });
+    </script>
+</body>
+
+</html>

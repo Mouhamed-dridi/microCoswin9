@@ -21,8 +21,10 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             // Store user in session
             sessionStorage.setItem('mobileUser', JSON.stringify(user));
 
-            // Redirect to mobile dashboard (to be created)
-            // window.location.href = 'dashboard.html';
+            // Redirect to mobile dashboard
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 800);
         } else {
             alert('Invalid credentials. Please use your Staff ID and generated 6-char password.');
             loginBtn.innerHTML = 'Login <i class="fa-solid fa-arrow-right"></i>';

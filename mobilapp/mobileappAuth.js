@@ -15,13 +15,21 @@ const MobileAuth = {
             const response = await fetch('../databases/maintenanceTeam.json');
             const data = await response.json();
 
-            this.users = data.map(user => ({
-                name: user.name,
-                staffId: user.id,
-                // Generate a consistent 6-character password based on their ID
-                // In a real app, these would be stored in a secure hashed format
-                password: this.generatePassword(user.id)
-            }));
+            this.users = data.map(user => {
+                const u = {
+                    name: user.name,
+                    staffId: user.id,
+                    password: this.generatePassword(user.id),
+                    profileImage: 'https://i.pravatar.cc/150?u=' + user.id // Default
+                };
+
+                // Specific image for Bilel
+                if (user.name.toLowerCase().includes('bilel')) {
+                    u.profileImage = 'assets/user-image.png';
+                }
+
+                return u;
+            });
 
             console.log('Mobile Auth Database Initialized');
             // For development: log the credentials so the user knows what they are
@@ -56,6 +64,13 @@ const MobileAuth = {
      */
     async login(username, password) {
         if (this.users.length === 0) await this.init();
+
+        // DEV BYPASS: Allow 'team' / 'team123' for easy testing
+        if (username.toLowerCase() === 'team' && password === 'team123') {
+            console.log('Dev Login Successful');
+            // Return the first user by default so the dashboard has data
+            return this.users[0];
+        }
 
         return this.users.find(u =>
             (u.name.toLowerCase() === username.toLowerCase() || u.staffId === username) &&

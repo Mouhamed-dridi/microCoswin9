@@ -34,10 +34,10 @@
 
                 <div class="form-footer">
                     <label class="checkbox-group">
-                        <input type="checkbox" checked>
+                        <input type="checkbox" id="rememberMe" checked>
                         <span>Remember me</span>
                     </label>
-                    <a href="#" class="link">Forgot Password?</a>
+                    <a href="#" class="link" id="forgotPassBtn">Forgot Password?</a>
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="loginBtn">
@@ -46,13 +46,53 @@
             </form>
         </main>
 
-        <footer class="footer-text">
-            Don't have an account? <a href="#" class="link-highlight">Contact Admin</a>
-        </footer>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal-overlay" id="forgotPassModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 class="modal-title">Reset Password</h3>
+            <p class="modal-desc">Forgot your password? No problem. Click the button below to send a request to the
+                administrator to reset your password.</p>
+            <button class="btn btn-primary" id="sendResetReq">
+                Send request to admin <i class="fa-solid fa-paper-plane"></i>
+            </button>
+            <button class="btn" style="background: transparent; margin-top: 10px; color: var(--text-muted);"
+                id="closeModal">
+                Cancel
+            </button>
+        </div>
     </div>
 
     <script src="mobileappAuth.js"></script>
     <script src="auth.js"></script>
+    <script>
+        const modal = document.getElementById('forgotPassModal');
+        const forgotBtn = document.getElementById('forgotPassBtn');
+        const closeBtn = document.getElementById('closeModal');
+        const sendBtn = document.getElementById('sendResetReq');
+
+        forgotBtn.onclick = (e) => {
+            e.preventDefault();
+            modal.style.display = 'flex';
+        }
+
+        closeBtn.onclick = () => modal.style.display = 'none';
+
+        sendBtn.onclick = () => {
+            alert('Your request has been sent to the administrator. Please wait for approval.');
+            modal.style.display = 'none';
+        }
+
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 </body>
 
 </html>

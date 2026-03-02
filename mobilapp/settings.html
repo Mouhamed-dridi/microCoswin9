@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MicoFix - Settings</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body style="background-color: var(--bg-alt);">
+    <div class="header-curved" style="background-color: var(--text); padding-bottom: 80px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="dashboard.html" style="color: var(--bg); font-size: 20px;"><i
+                    class="fa-solid fa-chevron-left"></i></a>
+            <h1 class="title" style="font-size: 20px; color: var(--bg);">Settings</h1>
+            <div style="width: 40px;"></div>
+        </div>
+    </div>
+
+    <div style="padding: 24px; margin-top: -30px;">
+        <div class="task-card" style="margin-bottom: 24px;">
+            <h3 style="margin-bottom: 16px; font-weight: 800;">Preferences</h3>
+
+            <!-- Dark Mode Toggle -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div
+                        style="width: 40px; height: 40px; background: #333; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-moon"></i></div>
+                    <span style="font-weight: 600;">Dark Mode</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Language Selection -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div
+                        style="width: 40px; height: 40px; background: #E6EFFF; color: #3D8BFF; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-globe"></i></div>
+                    <span style="font-weight: 600;">Language</span>
+                </div>
+                <select id="langSelect"
+                    style="border: none; background: transparent; font-weight: 700; color: var(--primary); outline: none;">
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="ar">العربية</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="task-card">
+            <h3 style="margin-bottom: 16px; font-weight: 800;">About App</h3>
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; justify-content: space-between; color: var(--text-muted); font-size: 14px;">
+                    <span>Version</span>
+                    <span style="font-weight: 600;">1.0.0 (Build 42)</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; color: var(--text-muted); font-size: 14px;">
+                    <span>Support</span>
+                    <span style="font-weight: 600; color: var(--primary);">support@micofix.io</span>
+                </div>
+                <div
+                    style="padding-top: 10px; border-top: 1px solid #F0F0F0; text-align: center; font-size: 12px; color: var(--text-muted);">
+                    © 2026 MicoFix SaaS Platforms
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Switch Style CSS -->
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(22px);
+        }
+    </style>
+
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item"><i class="fa-solid fa-grip"></i></a>
+        <a href="scheduling.html" class="nav-item"><i class="fa-solid fa-calendar-days"></i></a>
+        <a href="settings.html" class="nav-item active"><i class="fa-solid fa-gear"></i></a>
+        <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i></a>
+    </nav>
+
+    <script src="settingsManager.js"></script>
+    <script>
+        const darkToggle = document.getElementById('darkModeToggle');
+        const langSelect = document.getElementById('langSelect');
+
+        // Init UI from Manager
+        darkToggle.checked = SettingsManager.getSettings().theme === 'dark';
+        langSelect.value = SettingsManager.getSettings().language;
+
+        darkToggle.addEventListener('change', () => {
+            SettingsManager.toggleTheme();
+        });
+
+        langSelect.addEventListener('change', (e) => {
+            SettingsManager.setLanguage(e.target.value);
+            alert('Language changed to ' + e.target.value + '. Refreshing contents.');
+        });
+    </script>
+</body>
+
+</html>
