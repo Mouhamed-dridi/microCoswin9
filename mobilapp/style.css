@@ -48,7 +48,8 @@ body {
 
 .container {
     padding: 24px;
-    max-width: 450px;
+    max-width: 600px;
+    /* Increased for small tablets */
     margin: 0 auto;
     width: 100%;
     flex: 1;
@@ -56,10 +57,53 @@ body {
     flex-direction: column;
 }
 
+/* Media Queries for Responsiveness */
+@media (max-width: 380px) {
+    .container {
+        padding: 16px;
+    }
+
+    .title {
+        font-size: 28px;
+    }
+
+    .header-curved {
+        padding: 40px 16px 60px 16px;
+    }
+}
+
+@media (min-width: 600px) {
+    .container {
+        padding: 40px;
+    }
+
+    .illustration-hero {
+        max-height: 350px;
+    }
+
+    .task-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+        padding: 0 24px 120px 24px;
+    }
+}
+
+/* Safe Area Insets for Modern Devices */
+@supports (padding: env(safe-area-inset-top)) {
+    .header-curved {
+        padding-top: calc(40px + env(safe-area-inset-top));
+    }
+
+    body {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
 /* Typography */
 .logo {
     font-weight: 800;
-    font-size: 24px;
+    font-size: min(6vw, 24px);
     letter-spacing: -1px;
 }
 
@@ -68,14 +112,14 @@ body {
 }
 
 .title {
-    font-size: 32px;
+    font-size: min(8vw, 32px);
     line-height: 1.2;
     font-weight: 800;
     margin-bottom: 12px;
 }
 
 .subtitle {
-    font-size: 16px;
+    font-size: clamp(14px, 4vw, 16px);
     color: var(--text-muted);
     line-height: 1.5;
     margin-bottom: 30px;
@@ -84,6 +128,7 @@ body {
 /* Illustrations */
 .illustration-hero {
     width: 100%;
+    max-width: 100%;
     height: auto;
     max-height: 280px;
     object-fit: contain;
@@ -103,10 +148,12 @@ body {
     }
 }
 
-/* Buttons */
+/* Buttons and Interaction */
 .btn {
     width: 100%;
     padding: 18px;
+    min-height: 56px;
+    /* Touch target size */
     border-radius: var(--radius);
     border: none;
     font-size: 16px;
@@ -118,6 +165,8 @@ body {
     gap: 10px;
     transition: var(--transition);
     text-decoration: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .btn-primary {
@@ -126,10 +175,274 @@ body {
 }
 
 .btn-primary:active {
-    transform: scale(0.98);
+    transform: scale(0.96);
+    opacity: 0.9;
 }
 
-/* Forms */
+/* Dashboard Helper Classes */
+.dashboard-page {
+    background-color: var(--bg-alt);
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.icon-badge {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    padding: 10px !important;
+    min-height: 40px !important;
+    width: 40px;
+    justify-content: center;
+}
+
+.view-all {
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.operator-scroll {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 0 24px 20px 24px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.sort-by {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Modal Internal Styles */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.close-icon {
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 20px;
+    padding: 8px;
+}
+
+.notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+}
+
+.notif-item {
+    padding: 12px;
+    border-bottom: 1px solid #EEE;
+}
+
+:root.dark-mode .notif-item {
+    border-color: #333;
+}
+
+.notif-title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.notif-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.notif-time {
+    color: #CCC;
+}
+
+/* Profile Helper Classes */
+.profile-header {
+    padding-bottom: 100px !important;
+}
+
+.back-link {
+    color: white;
+    font-size: 20px;
+}
+
+
+.profile-edit-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: var(--primary);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--bg);
+    cursor: pointer;
+}
+
+.profile-edit-badge i {
+    font-size: 12px;
+}
+
+.user-name {
+    font-weight: 800;
+    font-size: 22px;
+}
+
+.user-role {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.edit-profile-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 8px;
+}
+
+.modal-title-small {
+    margin-bottom: 20px;
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.auto-height {
+    height: auto;
+    min-height: 100px;
+    resize: none;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.secondary-btn {
+    background: #F0F0F0 !important;
+    color: #666 !important;
+}
+
+.ghost-btn {
+    background: transparent !important;
+    margin-top: 10px !important;
+    color: var(--text-muted) !important;
+}
+
+.profile-content {
+    padding: 0 24px;
+    margin-top: 70px;
+}
+
+.content-heading {
+    margin-bottom: 12px;
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.content-text {
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.contact-card {
+    padding: 16px !important;
+    border-radius: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.contact-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.whatsapp-bg {
+    background: #E7F6ED;
+    color: #25D366;
+}
+
+.email-bg {
+    background: #E6EFFF;
+    color: #3D8BFF;
+}
+
+.contact-label {
+    font-weight: 600;
+    display: block;
+}
+
+.contact-value {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.chevron-muted {
+    color: #CCC;
+}
+
+.logout-section {
+    margin-bottom: 120px;
+    text-align: center;
+}
+
+.logout-btn {
+    background: none;
+    border: none;
+    color: #FF4D4D;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 auto;
+}
+
 .form-group {
     margin-bottom: 24px;
 }
@@ -145,12 +458,16 @@ body {
 .input {
     width: 100%;
     padding: 18px;
+    min-height: 56px;
+    /* Touch target size */
     background-color: var(--input-bg);
     border: 2px solid transparent;
     border-radius: var(--radius);
     font-size: 16px;
     outline: none;
     transition: var(--transition);
+    appearance: none;
+    /* Mobile reset */
 }
 
 .input:focus {
@@ -162,12 +479,13 @@ body {
 /* Dashboard Premium Styles */
 .header-curved {
     background-color: var(--primary);
-    padding: 60px 24px 80px 24px;
+    padding: clamp(40px, 10vh, 60px) 24px 80px 24px;
     border-radius: 0 0 var(--radius-xl) var(--radius-xl);
     color: white;
     position: relative;
     margin-bottom: -40px;
     z-index: 5;
+    width: 100%;
 }
 
 .header-curved .logo {
@@ -190,6 +508,7 @@ body {
     overflow-x: auto;
     margin: 60px 0 24px 0;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 .filter-scroll::-webkit-scrollbar {
@@ -198,6 +517,10 @@ body {
 
 .filter-badge {
     padding: 12px 24px;
+    min-height: 44px;
+    /* Touch target */
+    display: flex;
+    align-items: center;
     background: #F1F1F1;
     border-radius: 100px;
     font-size: 14px;
@@ -205,6 +528,7 @@ body {
     white-space: nowrap;
     cursor: pointer;
     transition: var(--transition);
+    user-select: none;
 }
 
 .filter-badge.active {
@@ -226,6 +550,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    width: 100%;
 }
 
 .task-card {
@@ -235,11 +560,17 @@ body {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
     border: 1px solid #F0F0F0;
     transition: var(--transition);
+    width: 100%;
+    cursor: pointer;
 }
 
 :root.dark-mode .task-card {
     border-color: #333333;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.task-card:active {
+    transform: scale(0.98);
 }
 
 .task-tag {
@@ -271,6 +602,7 @@ body {
 
 .task-meta {
     display: flex;
+    flex-wrap: wrap;
     gap: 16px;
     color: var(--text-muted);
     font-size: 13px;
@@ -310,6 +642,14 @@ body {
     z-index: 10;
 }
 
+@media (max-width: 400px) {
+    .profile-card {
+        flex-direction: column;
+        text-align: center;
+        margin: -40px 16px 0 16px;
+    }
+}
+
 :root.dark-mode .profile-card {
     box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
 }
@@ -342,6 +682,7 @@ body {
     position: relative;
     width: 80px;
     height: 80px;
+    margin: 0 auto;
 }
 
 .profile-img {
@@ -354,7 +695,7 @@ body {
 /* Bottom Navigation */
 .bottom-nav {
     position: fixed;
-    bottom: calc(24px + env(safe-area-inset-bottom));
+    bottom: max(24px, env(safe-area-inset-bottom));
     left: 24px;
     right: 24px;
     background: #111111;
@@ -365,8 +706,8 @@ body {
     align-items: center;
     z-index: 100;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    /* Safe area for modern iPhones */
-    padding-bottom: calc(10px + env(safe-area-inset-bottom) / 2);
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 .nav-item {
@@ -396,51 +737,7 @@ body {
     font-size: 22px;
 }
 
-/* Login Page Specifics */
-.form-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    font-size: 14px;
-}
-
-.checkbox-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-weight: 500;
-}
-
-.checkbox-group input {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--primary);
-    cursor: pointer;
-}
-
-.link {
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.link-highlight {
-    color: var(--primary);
-    font-weight: 800;
-    text-decoration: none;
-}
-
-.footer-text {
-    margin-top: auto;
-    padding: 30px 0;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 14px;
-}
-
-/* Modal for Forgot Password */
+/* Modal Styling */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -453,7 +750,15 @@ body {
     align-items: center;
     justify-content: center;
     padding: 24px;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    display: flex;
+    opacity: 1;
 }
 
 .modal-content {
@@ -464,6 +769,12 @@ body {
     border-radius: var(--radius-lg);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     text-align: center;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
 }
 
 .modal-icon {
@@ -490,4 +801,76 @@ body {
     color: var(--text-muted);
     line-height: 1.6;
     margin-bottom: 24px;
+}
+
+.footer-text {
+    margin-top: auto;
+    padding: 30px 0;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* Scheduling Helper Classes */
+.scheduling-header {
+    padding-bottom: 80px !important;
+}
+
+.scheduling-content {
+    padding: 24px;
+    margin-top: 60px;
+}
+
+.calendar-hero {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.calendar-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    font-weight: 700;
+}
+
+.month-title {
+    font-size: 16px;
+}
+
+.calendar-days {
+    display: flex;
+    justify-content: space-between;
+}
+
+.day-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.day-name {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.day-num {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.day-num.highlight {
+    background: var(--text);
+    color: white;
+    border-radius: 12px;
+}
+
+.section-title-large {
+    margin: 0 0 16px 0;
+    font-weight: 800;
+    font-size: 20px;
 }

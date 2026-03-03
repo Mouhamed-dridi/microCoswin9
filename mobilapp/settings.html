@@ -10,25 +10,26 @@
 </head>
 
 <body style="background-color: var(--bg-alt);">
-    <div class="header-curved" style="background-color: var(--text); padding-bottom: 80px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <a href="dashboard.html" style="color: var(--bg); font-size: 20px;"><i
-                    class="fa-solid fa-chevron-left"></i></a>
-            <h1 class="title" style="font-size: 20px; color: var(--bg);">Settings</h1>
-            <div style="width: 40px;"></div>
+    <div class="header-curved">
+        <div class="header-top">
+            <a href="dashboard.html" class="back-link"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="header-actions">
+                <!-- Placeholder for future actions -->
+            </div>
         </div>
+        <h1 class="title">Settings</h1>
     </div>
 
-    <div style="padding: 24px; margin-top: -30px;">
+    <div class="profile-content">
         <div class="task-card" style="margin-bottom: 24px;">
-            <h3 style="margin-bottom: 16px; font-weight: 800;">Preferences</h3>
+            <h3 class="content-heading">Preferences</h3>
 
             <!-- Dark Mode Toggle -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div
-                        style="width: 40px; height: 40px; background: #333; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                        <i class="fa-solid fa-moon"></i></div>
+                    <div class="contact-icon" style="background: #333; color: white;">
+                        <i class="fa-solid fa-moon"></i>
+                    </div>
                     <span style="font-weight: 600;">Dark Mode</span>
                 </div>
                 <label class="switch">
@@ -40,9 +41,9 @@
             <!-- Language Selection -->
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div
-                        style="width: 40px; height: 40px; background: #E6EFFF; color: #3D8BFF; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                        <i class="fa-solid fa-globe"></i></div>
+                    <div class="contact-icon email-bg">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
                     <span style="font-weight: 600;">Language</span>
                 </div>
                 <select id="langSelect"
@@ -55,7 +56,7 @@
         </div>
 
         <div class="task-card">
-            <h3 style="margin-bottom: 16px; font-weight: 800;">About App</h3>
+            <h3 class="content-heading">About App</h3>
             <div style="display: flex; flex-direction: column; gap: 16px;">
                 <div style="display: flex; justify-content: space-between; color: var(--text-muted); font-size: 14px;">
                     <span>Version</span>

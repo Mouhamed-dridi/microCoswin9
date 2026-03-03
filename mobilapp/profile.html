@@ -10,76 +10,71 @@
 </head>
 
 <body style="background-color: var(--bg-alt);">
-    <div class="header-curved" style="background-color: var(--primary); padding-bottom: 100px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <a href="dashboard.html" style="color: white; font-size: 20px;"><i class="fa-solid fa-chevron-left"></i></a>
-            <h1 class="title" style="font-size: 20px;">My profile</h1>
-            <div style="display: flex; gap: 12px;">
-                <div class="filter-badge" id="notifBtn"
-                    style="background: rgba(255,255,255,0.2); color: white; padding: 10px; cursor: pointer;">
+    <div class="header-curved profile-header">
+        <div class="header-top">
+            <a href="dashboard.html" class="back-link"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="header-actions">
+                <div class="filter-badge icon-badge" id="notifBtn">
                     <i class="fa-solid fa-bell"></i>
                 </div>
             </div>
         </div>
+        <h1 class="title">My profile</h1>
     </div>
 
     <div class="profile-card">
         <div class="profile-img-container">
             <img src="https://i.pravatar.cc/150?u=maintenance" alt="Profile" class="profile-img" id="userImg">
             <input type="file" id="imageInput" accept="image/*" style="display: none;">
-            <div class="profile-edit-badge" id="changeImg"
-                style="position: absolute; bottom: 0; right: 0; background: var(--primary); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid var(--bg); cursor: pointer;">
-                <i class="fa-solid fa-camera" style="font-size: 12px;"></i>
+            <div class="profile-edit-badge" id="changeImg">
+                <i class="fa-solid fa-camera"></i>
             </div>
         </div>
         <div class="profile-info">
-            <h2 id="userName" style="font-weight: 800; font-size: 22px;">Staff Member</h2>
-            <p id="userRole" style="color: var(--text-muted); font-size: 14px;">Maintenance Technician</p>
+            <h2 id="userName" class="user-name">Staff Member</h2>
+            <p id="userRole" class="user-role">Maintenance Technician</p>
         </div>
-        <div id="openEdit"
-            style="position: absolute; top: 20px; right: 20px; color: var(--text-muted); cursor: pointer;">
+        <div id="openEdit" class="edit-profile-btn">
             <i class="fa-solid fa-pen-to-square"></i>
         </div>
     </div>
 
     <!-- Edit Profile Modal -->
-    <div id="editModal"
-        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 24px;">
-        <div class="task-card" style="width: 100%; max-width: 400px;">
-            <h3 style="margin-bottom: 20px; font-weight: 800;">Edit Profile</h3>
-            <div class="form-group">
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title-small">Edit Profile</h3>
+            <div class="form-group text-left">
                 <label class="label">Full Name</label>
                 <input type="text" id="editName" class="input">
             </div>
-            <div class="form-group">
+            <div class="form-group text-left">
                 <label class="label">Bio</label>
-                <textarea id="editBio" class="input" style="height: 100px; resize: none;"></textarea>
+                <textarea id="editBio" class="input auto-height"></textarea>
             </div>
-            <div style="display: flex; gap: 12px; margin-top: 24px;">
-                <button id="cancelEdit" class="btn" style="background: #F0F0F0; color: #666;">Cancel</button>
+            <div class="modal-actions">
+                <button id="cancelEdit" class="btn secondary-btn">Cancel</button>
                 <button id="saveEdit" class="btn btn-primary">Save Changes</button>
             </div>
         </div>
     </div>
 
     <!-- Notifications Modal -->
-    <div id="notifModal"
-        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1001; align-items: center; justify-content: center; padding: 24px;">
-        <div class="task-card" style="width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="font-weight: 800;">Notifications</h3>
-                <i id="closeNotif" class="fa-solid fa-xmark" style="cursor: pointer; color: var(--text-muted);"></i>
+    <div id="notifModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Notifications</h3>
+                <i id="closeNotif" class="fa-solid fa-xmark close-icon"></i>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 12px;" id="notifList">
-                <div style="padding: 12px; border-bottom: 1px solid #EEE;">
-                    <p style="font-weight: 600; font-size: 14px;">New Task Assigned</p>
-                    <p style="font-size: 12px; color: var(--text-muted);">Repair Machine P47 - Zone 3</p>
-                    <small style="color: #CCC;">2 mins ago</small>
+            <div class="notif-list" id="notifList">
+                <div class="notif-item">
+                    <p class="notif-title">New Task Assigned</p>
+                    <p class="notif-desc">Repair Machine P47 - Zone 3</p>
+                    <small class="notif-time">2 mins ago</small>
                 </div>
-                <div style="padding: 12px; border-bottom: 1px solid #EEE;">
-                    <p style="font-weight: 600; font-size: 14px;">Maintenance Schedule</p>
-                    <p style="font-size: 12px; color: var(--text-muted);">Weekly check for Robot R-12</p>
-                    <small style="color: #CCC;">1 hour ago</small>
+                <div class="notif-item">
+                    <p class="notif-title">Maintenance Schedule</p>
+                    <p class="notif-desc">Weekly check for Robot R-12</p>
+                    <small class="notif-time">1 hour ago</small>
                 </div>
             </div>
         </div>
@@ -96,50 +91,44 @@
         </div>
     </div>
 
-    <div style="padding: 0 24px; margin-top: 10px;">
-        <h3 style="margin-bottom: 12px; font-weight: 800; font-size: 18px;">About</h3>
-        <p id="userBio" style="color: var(--text-muted); line-height: 1.6; font-size: 14px; margin-bottom: 30px;">
+    <div class="profile-content">
+        <h3 class="content-heading">About</h3>
+        <p id="userBio" class="content-text">
             Professional maintenance technician dedicated to ensuring operational excellence across all machinery.
             Specialized in electrical and mechanical repairs.
         </p>
 
-        <h3 style="margin-bottom: 16px; font-weight: 800; font-size: 18px;">Contact Information</h3>
-        <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px;">
-            <div class="task-card"
-                style="padding: 16px; border-radius: 20px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div
-                        style="width: 40px; height: 40px; background: #E7F6ED; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #25D366;">
-                        <i class="fa-brands fa-whatsapp" style="font-size: 20px;"></i>
+        <h3 class="content-heading">Contact Information</h3>
+        <div class="contact-list">
+            <div class="task-card contact-card">
+                <div class="contact-item">
+                    <div class="contact-icon whatsapp-bg">
+                        <i class="fa-brands fa-whatsapp"></i>
                     </div>
                     <div>
-                        <span style="font-weight: 600; display: block;">WhatsApp</span>
-                        <span id="userWhatsapp" style="font-size: 13px; color: var(--text-muted);">+216 -- ---
-                            ---</span>
+                        <span class="contact-label">WhatsApp</span>
+                        <span id="userWhatsapp" class="contact-value">+216 -- --- ---</span>
                     </div>
                 </div>
-                <i class="fa-solid fa-chevron-right" style="color: #CCC;"></i>
+                <i class="fa-solid fa-chevron-right chevron-muted"></i>
             </div>
 
-            <div class="task-card"
-                style="padding: 16px; border-radius: 20px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div
-                        style="width: 40px; height: 40px; background: #E6EFFF; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #3D8BFF;">
-                        <i class="fa-solid fa-envelope" style="font-size: 18px;"></i>
+            <div class="task-card contact-card">
+                <div class="contact-item">
+                    <div class="contact-icon email-bg">
+                        <i class="fa-solid fa-envelope"></i>
                     </div>
                     <div>
-                        <span style="font-weight: 600; display: block;">Email Address</span>
-                        <span id="userEmail" style="font-size: 13px; color: var(--text-muted);">user@micofix.com</span>
+                        <span class="contact-label">Email Address</span>
+                        <span id="userEmail" class="contact-value">user@micofix.com</span>
                     </div>
                 </div>
-                <i class="fa-solid fa-chevron-right" style="color: #CCC;"></i>
+                <i class="fa-solid fa-chevron-right chevron-muted"></i>
             </div>
         </div>
 
-        <div style="margin-bottom: 120px; text-align: center;">
-            <button id="logoutBtn"
-                style="background: none; border: none; color: #FF4D4D; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 auto;">
+        <div class="logout-section">
+            <button id="logoutBtn" class="logout-btn">
                 <i class="fa-solid fa-right-from-bracket"></i> Logout Account
             </button>
         </div>

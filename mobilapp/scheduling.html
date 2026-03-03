@@ -10,56 +10,34 @@
 </head>
 
 <body style="background-color: var(--bg-alt);">
-    <div class="header-curved" style="background-color: var(--primary); padding-bottom: 80px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <a href="dashboard.html" style="color: white; font-size: 20px;"><i class="fa-solid fa-chevron-left"></i></a>
-            <h1 class="title" style="font-size: 20px; color: white;">Maintenance</h1>
-            <div class="filter-badge" style="background: rgba(255,255,255,0.2); color: white; padding: 10px;"><i
-                    class="fa-solid fa-plus"></i></div>
+    <div class="header-curved scheduling-header">
+        <div class="header-top">
+            <a href="dashboard.html" class="back-link"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="header-actions">
+                <!-- No actions -->
+            </div>
         </div>
+        <h1 class="title">Maintenance</h1>
     </div>
 
-    <div style="padding: 24px; margin-top: -30px;">
-        <!-- Calendar Hero Strip -->
-        <div class="task-card" style="margin-bottom: 24px; text-align: center;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: 700;">
-                <i class="fa-solid fa-chevron-left" style="color: #CCC;"></i>
-                <span>March 2026</span>
-                <i class="fa-solid fa-chevron-right" style="color: #CCC;"></i>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <span style="font-size: 12px; color: var(--text-muted);">M</span>
-                    <span
-                        style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: 700;">1</span>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <span style="font-size: 12px; color: var(--text-muted);">T</span>
-                    <span
-                        style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: 700;">2</span>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <span style="font-size: 12px; color: var(--text-muted);">W</span>
-                    <span
-                        style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: 700;">3</span>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <span style="font-size: 12px; color: var(--text-muted);">T</span>
-                    <span
-                        style="width: 35px; height: 35px; background: var(--text); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700;">4</span>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <span style="font-size: 12px; color: var(--text-muted);">F</span>
-                    <span
-                        style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: 700;">5</span>
-                </div>
-            </div>
-        </div>
-
-        <h3 style="margin: 0 0 16px 0; font-weight: 800;">Upcoming Repairs</h3>
+    <div class="scheduling-content">
+        <h3 class="section-title-large">Upcoming Repairs</h3>
 
         <div class="task-list" id="schedulingList">
             <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- Task Details Modal -->
+    <div id="taskDetailModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Maintenance Info</h3>
+                <i id="closeTaskDetail" class="fa-solid fa-xmark close-icon"></i>
+            </div>
+            <div class="notif-list" id="taskDetailContent">
+                <!-- Data will be populated here -->
+            </div>
         </div>
     </div>
 
@@ -77,23 +55,50 @@
             const user = DataManager.getUserProfile();
             if (!user) { window.location.href = 'login.html'; return; }
 
-            const tickets = await DataManager.getDashboardData(); // Fetch all tickets as requested
+            const tickets = await DataManager.getDashboardData();
             const list = document.getElementById('schedulingList');
+            const modal = document.getElementById('taskDetailModal');
+            const content = document.getElementById('taskDetailContent');
+            const closeBtn = document.getElementById('closeTaskDetail');
 
-            // Show only future or recent tasks in scheduling view
+            closeBtn.onclick = () => modal.classList.remove('active');
+            window.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
+
             list.innerHTML = tickets.map(ticket => `
-                <div class="task-card" style="margin-bottom: 12px;">
+                <div class="task-card" onclick="showTaskDetails('${ticket.id}')">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                         <span class="task-tag todo">Scheduled</span>
                         <i class="fa-solid fa-ellipsis-vertical" style="color: #CCC;"></i>
                     </div>
                     <h3 class="task-title" style="font-size: 16px;">Maintenance Service #${ticket.id.substring(ticket.id.length - 4)}</h3>
                     <div class="task-meta">
-                        <div><i class="fa-solid fa-robot"></i> ${ticket.machine.nameOrCode}</div>
+                        <div><i class="fa-solid fa-gear"></i> ${ticket.machine.nameOrCode}</div>
                         <div><i class="fa-solid fa-location-dot"></i> ${ticket.machine.location}</div>
                     </div>
                 </div>
             `).join('');
+
+            window.showTaskDetails = (ticketId) => {
+                const ticket = tickets.find(t => t.id === ticketId);
+                if (!ticket) return;
+
+                content.innerHTML = `
+                    <div class="notif-item">
+                        <p class="notif-title"><i class="fa-solid fa-screwdriver-wrench"></i> Maintenance Process</p>
+                        <p class="notif-desc">Initiating full diagnostic on <strong>${ticket.machine.nameOrCode}</strong>. 
+                        Checking hydraulics, electrical systems, and mechanical wear.</p>
+                    </div>
+                    <div class="notif-item">
+                        <p class="notif-title"><i class="fa-solid fa-clock"></i> Schedule</p>
+                        <p class="notif-desc">${ticket.date} at ${ticket.time}</p>
+                    </div>
+                    <div class="notif-item">
+                        <p class="notif-title"><i class="fa-solid fa-location-dot"></i> Location</p>
+                        <p class="notif-desc">${ticket.machine.location}</p>
+                    </div>
+                `;
+                modal.classList.add('active');
+            };
         }
         document.addEventListener('DOMContentLoaded', loadScheduledTasks);
     </script>
